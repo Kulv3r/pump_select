@@ -1,0 +1,48 @@
+*.py[cod]
+
+# C extensions
+*.so
+
+# Translations
+*.mo
+
+# Caches
+.webassets-cache
+.cache/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*$py.class
+
+# Translations
+*.pot
+
+# virtualenv
+.env
+env/
+venv/
+ENV/
+
+# Pytest Coverage
+.coverage
+
+# Test reports
+tests/reports
+
+# Other
+fabric.properties
+.idea/
+user_portal.iml
+dev.db
+
+# Static libs - load with `bower install`
+user_portal/static/libs/
+
+# Static files
+common.js
+common.css
+
+*.todo
+*.bak
+
+tmp/
