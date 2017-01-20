@@ -18,7 +18,7 @@
         </form>
     </div>
     <div class="col-lg-8">
-      <h2><i class="fa fa-eye"></i> Chart</h2>
+      <h2><i class="fa fa-line-chart"></i> Chart</h2>
         <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
     </div>
   </div><!-- /.row -->
@@ -30,20 +30,22 @@
 $(function () {
     Highcharts.chart('container', {
         title: {
-{#            text: 'Monthly Average Temperature',#}
-{#            x: -20 //center#}
-        },
-        subtitle: {
-{#            text: 'Source: WorldClimate.com',#}
-{#            x: -20#}
+            text: 'Q(H)',
+            x: -20 //center
         },
         xAxis: {
-{#            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',#}
-{#                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']#}
+            title: {
+                text: 'H, m'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#ddd'
+            }]
         },
         yAxis: {
             title: {
-                text: 'Q'
+                text: 'Q, m3/s'
             },
             plotLines: [{
                 value: 0,
@@ -61,22 +63,26 @@ $(function () {
             borderWidth: 0
         },
         series: [{
-            name: 'points',
+            name: 'manual points',
             data: {{ points_series_data }},
             lineWidth: 0
         },
                 {
-            name: '2',
-            data: {{ polynoms_vals[2] }}
+            name: 'polynom ^2',
+            data: {{ polynoms_vals[2] }},
+            marker: {enabled: false}
         },
                 {
-            name: '4',
-            data: {{ polynoms_vals[4] }}
+            name: 'polynom ^4',
+            data: {{ polynoms_vals[4] }},
+            marker: {enabled: false}
         },
                 {
-            name: '6',
-            data: {{ polynoms_vals[6] }}
-        }]
+            name: 'polynom ^6',
+            data: {{ polynoms_vals[6] }},
+            marker: {enabled: false}
+        }
+        ]
     });
 });
 </script>

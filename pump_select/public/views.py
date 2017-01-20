@@ -18,7 +18,7 @@ def home():
     H = np.array(data.H1)
     Q = np.array(data.Q1)
 
-    points_series_data = [(q, data.H1[idx]) for idx, q in enumerate(data.Q1)]
+    points_series_data = [[q, data.H1[idx]] for idx, q in enumerate(data.Q1)]
 
     polynoms = {}
     polynoms_vals = {}
@@ -32,13 +32,14 @@ def home():
         max_x = data.Q1[-1]
         if max_x < x:
             x, max_x = max_x, x
-        steps = len(data.Q1)
+        steps = 50
         step = (max_x - x) / steps
         series = []
-        while x < max_x:
+        while x < (max_x+step):
+        # for x in data.Q1:
             # f = p[0] + p[1] * x**1 + p[2] * x**2 + ...
             f = sum([(c * x**p) for p, c in enumerate(polynom)])
-            series.append((round(x, 1), round(f, 1)))
+            series.append([round(x, 1), round(f, 1)])
             x += step
 
         polynoms_vals[n] = series
@@ -52,8 +53,8 @@ def home():
     return render_template(
         'public/home.html',
         # form=form,
-        polynoms_vals=polynoms_vals,
         points_series_data=points_series_data,
+        polynoms_vals=polynoms_vals,
     )
 
 
