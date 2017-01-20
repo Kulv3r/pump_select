@@ -5,6 +5,7 @@ from flask_login import login_required, login_user, logout_user
 
 from pump_select import data
 from pump_select.extensions import login_manager
+from pump_select.public.forms import CharacteristicValuesForm
 from pump_select.user.forms import RegisterForm, LoginForm
 from pump_select.user.models import User
 from pump_select.utils import flash_errors
@@ -14,33 +15,46 @@ blueprint = Blueprint('public', __name__, static_folder='../static')
 
 @blueprint.route('/', methods=['GET', 'POST'])
 def home():
-    points_series_data = [list(i) for i in zip(data.Q1, data.H1)]
+    Q, H = data.Q1, data.H1
 
-    # form = CharacteristicValuesForm()
-    # if form.validate_on_submit():
-    #     1
-    # elif request.method == 'POST':
-    #     flash_errors(form)
+    form = CharacteristicValuesForm()
+
+    if request.method == 'GET':
+        form.x_csv.data = Q
+        form.y_csv.data = H
+
+    if form.validate_on_submit():
+        Q = form.x_csv.data
+        H = form.y_csv.data
+
+    elif request.method == 'POST':
+        flash_errors(form)
+
+    points_series_data = [list(i) for i in zip(Q, H)]
 
     polynoms_vals = {}
-    for n in (2, 4, 6):
-        polynom = np.polynomial.polynomial.polyfit(data.Q1, data.H1, n)
+    for n in (2, 4, 6, 8):
+        polynom = np.polynomial.polynomial.polyfit(Q, H, n)
 
-        min_x = data.Q1[0]
-        max_x = data.Q1[-1]
+        min_x = Q[0]
+        max_x = Q[-1]
         if max_x < min_x:
             min_x, max_x = max_x, min_x
-        steps = 50
-        step = (max_x - min_x) / steps
+        steps = len(Q)*10
+        step = round((max_x - min_x) / steps, 1)
 
-        x_vals = [min_x + step*i for i in xrange(steps)]
-        x_series = np.polynomial.polynomial.polyval(x_vals, polynom).tolist()
+        x_vals = [min_x + step*i for i in xrange(steps+1)]
+        x_series = [round(i, 2) for i in
+                    np.polynomial.polynomial.polyval(x_vals, polynom).tolist()]
 
         polynoms_vals[n] = [list(i) for i in zip(x_vals, x_series)]
 
+    form.x_csv.data = ' '.join([str(i) for i in form.x_csv.data])
+    form.y_csv.data = ' '.join([str(i) for i in form.y_csv.data])
+
     return render_template(
         'public/home.html',
-        # form=form,
+        form=form,
         points_series_data=points_series_data,
         polynoms_vals=polynoms_vals,
     )

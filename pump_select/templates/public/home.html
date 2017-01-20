@@ -1,4 +1,12 @@
 {% extends "layout.html" %}
+
+{% block css %}
+    <style>
+    textarea.form-control {
+        height: 10rem;
+    }
+    </style>
+{% endblock %}
 {% block content %}
 <!-- Main jumbotron for a primary marketing message or call to action -->
 <div class="jumbotron">
@@ -11,9 +19,10 @@
       <h2><i class="fa fa-edit"></i> Input values</h2>
 
         <form class="form" method="POST" action="" role="form">
-{#            {% for field in form %}#}
-{#                {{ render_field(field) }}#}
-{#            {% endfor %}#}
+            {{ form.csrf_token }}
+            {% for field in form %}
+                {{ render_field(field) }}
+            {% endfor %}
             <p><input class="btn btn-default btn-submit" type="submit" value="Submit"></p>
         </form>
     </div>
@@ -30,12 +39,12 @@
 $(function () {
     Highcharts.chart('container', {
         title: {
-            text: 'Q(H)',
+            text: 'H(Q)',
             x: -20 //center
         },
         xAxis: {
             title: {
-                text: 'H, m'
+                text: 'X axis'
             },
             plotLines: [{
                 value: 0,
@@ -45,7 +54,7 @@ $(function () {
         },
         yAxis: {
             title: {
-                text: 'Q, m3/s'
+                text: 'Y axis'
             },
             plotLines: [{
                 value: 0,
@@ -80,6 +89,11 @@ $(function () {
                 {
             name: 'polynom ^6',
             data: {{ polynoms_vals[6] }},
+            marker: {enabled: false}
+        },
+                {
+            name: 'polynom ^8',
+            data: {{ polynoms_vals[8] }},
             marker: {enabled: false}
         }
         ]
