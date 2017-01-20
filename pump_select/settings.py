@@ -18,7 +18,7 @@ class ProdConfig(object):
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = get_env_or_fail('PUMP_SELECT_DATABASE_URI')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
     # Production configuration.
     ENV = 'prod'
@@ -31,7 +31,7 @@ class DevConfig(ProdConfig):
     DEBUG_TB_ENABLED = True
     WERKZEUG_DEBUG_PIN = 'off'
     ASSETS_DEBUG = True  # Don't bundle/minify static assets
-    CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
+    SQLALCHEMY_DATABASE_URI = get_env_or_fail('PUMP_SELECT_DATABASE_URI')
 
 
 class TestConfig(ProdConfig):
@@ -44,4 +44,4 @@ class TestConfig(ProdConfig):
     WTF_CSRF_ENABLED = False  # Allows form testing
 
 
-config = ProdConfig if os.environ.get('PUMP_SELECT_ENV') == 'prod' else DevConfig
+config = DevConfig if os.environ.get('FLASK_DEBUG') == '1' else ProdConfig
