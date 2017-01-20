@@ -1,33 +1,83 @@
-
 {% extends "layout.html" %}
 {% block content %}
 <!-- Main jumbotron for a primary marketing message or call to action -->
 <div class="jumbotron">
-
   <h1>Welcome to Pump Select</h1>
-
-  <p>This is a starter Flask template. It includes Bootstrap 3, jQuery 2, Flask-SQLAlchemy, WTForms, and various testing utilities out of the box.</p>
-  <p><a href="https://github.com/sloria/cookiecutter-flask" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
 </div><!-- /.jumbotron -->
 
 <div class="body-content">
   <div class="row">
     <div class="col-lg-4">
-      <h2><i class="fa fa-code"></i> Bootstrap 3</h2>
-      <p>Sleek, intuitive, and powerful mobile-first front-end framework for faster and easier web development.</p>
-      <p><a class="btn btn-default" href="http://getbootstrap.com/">Official website &raquo;</a></p>
+      <h2><i class="fa fa-edit"></i> Input values</h2>
+
+        <form class="form" method="POST" action="" role="form">
+{#            {% for field in form %}#}
+{#                {{ render_field(field) }}#}
+{#            {% endfor %}#}
+            <p><input class="btn btn-default btn-submit" type="submit" value="Submit"></p>
+        </form>
     </div>
-    <div class="col-lg-4">
-      <h2><i class="fa fa-flask"></i> SQLAlchemy</h2>
-      <p>SQLAlchemy is the Python SQL toolkit and Object Relational Mapper that gives application developers the full power and flexibility of SQL.</p>
-      <p><a href="http://www.sqlalchemy.org/" class="btn btn-default">Official website &raquo;</a></p>
-   </div>
-    <div class="col-lg-4">
-      <h2><i class="fa fa-edit"></i> WTForms</h2>
-      <p>WTForms is a flexible forms validation and rendering library for python web development.</p>
-      <p><a href="http://wtforms.simplecodes.com/" class="btn btn-default">Official website &raquo;</a></p>
+    <div class="col-lg-8">
+      <h2><i class="fa fa-eye"></i> Chart</h2>
+        <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
     </div>
   </div><!-- /.row -->
 </div>
 {% endblock %}
 
+{% block js %}
+<script>
+$(function () {
+    Highcharts.chart('container', {
+        title: {
+{#            text: 'Monthly Average Temperature',#}
+{#            x: -20 //center#}
+        },
+        subtitle: {
+{#            text: 'Source: WorldClimate.com',#}
+{#            x: -20#}
+        },
+        xAxis: {
+{#            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',#}
+{#                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']#}
+        },
+        yAxis: {
+            title: {
+                text: 'Q'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        tooltip: {
+            valueSuffix: 'm3'
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
+        },
+        series: [{
+            name: 'points',
+            data: {{ points_series_data }},
+            lineWidth: 0
+        },
+                {
+            name: '2',
+            data: {{ n2_series_data }}
+        },
+                {
+            name: '4',
+            data: {{ n4_series_data }}
+        },
+                {
+            name: '6',
+            data: {{ n6_series_data }}
+        }]
+    });
+});
+</script>
+{% endblock %}

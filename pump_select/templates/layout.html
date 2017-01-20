@@ -1,3 +1,23 @@
+{% macro render_field(field, placeholder='', class_="form-control") %}
+    {% if field.type in ('CSRFTokenField', ) or field.name == 'id' %}
+        {# pass #}
+    {% else %}
+        <div class="form-group">
+            {{ field.label }}
+            {% if field.errors %}
+                {{ field(class_="form-control") }}
+                <ul class="errors">
+                    {% for error in field.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                {{ field(class_="form-control") }}
+            {% endif %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
 
 <!doctype html>
 <!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
@@ -60,12 +80,10 @@
 
 {% include "footer.html" %}
 
-<!-- JavaScript at the bottom for fast page loading -->
 {% assets "js_all" %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
 {% endassets %}
 {% block js %}{% endblock %}
-<!-- end scripts -->
 {% endblock %}
 </body>
 </html>
