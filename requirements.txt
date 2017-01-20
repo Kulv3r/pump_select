@@ -24,6 +24,7 @@ WTForms==2.1
 
 # Deployment
 gunicorn==19.1.1
+gevent==1.1.2
 
 # Assets
 Flask-Assets==0.12
