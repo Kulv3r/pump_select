@@ -49,8 +49,8 @@ def home():
 
         polynoms_vals[n] = [list(i) for i in zip(x_vals, x_series)]
 
-    form.x_csv.data = ' '.join([str(i) for i in form.x_csv.data])
-    form.y_csv.data = ' '.join([str(i) for i in form.y_csv.data])
+    form.x_csv.data = '\n'.join([str(i) for i in form.x_csv.data])
+    form.y_csv.data = '\n'.join([str(i) for i in form.y_csv.data])
 
     return render_template(
         'public/home.html',

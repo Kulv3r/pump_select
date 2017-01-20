@@ -3,15 +3,15 @@
 {% block css %}
     <style>
     textarea.form-control {
-        height: 10rem;
+        height: 50rem;
     }
     </style>
 {% endblock %}
 {% block content %}
 <!-- Main jumbotron for a primary marketing message or call to action -->
-<div class="jumbotron">
-  <h1>Welcome to Pump Select</h1>
-</div><!-- /.jumbotron -->
+{#<div class="jumbotron">#}
+{#  <h1>Welcome to Pump Select</h1>#}
+{#</div><!-- /.jumbotron -->#}
 
 <div class="body-content">
   <div class="row">
@@ -20,15 +20,23 @@
 
         <form class="form" method="POST" action="" role="form">
             {{ form.csrf_token }}
-            {% for field in form %}
-                {{ render_field(field) }}
-            {% endfor %}
+{#            {% for field in form %}#}
+{#                {{ render_field(field) }}#}
+{#            {% endfor %}#}
+            <div class="col-lg-6">
+                {{ render_field(form.x_csv) }}
+            </div>
+            <div class="col-lg-6">
+                {{ render_field(form.y_csv) }}
+            </div>
+            <div class="col-lg-12">
             <p><input class="btn btn-default btn-submit" type="submit" value="Submit"></p>
+            </div>
         </form>
     </div>
     <div class="col-lg-8">
       <h2><i class="fa fa-line-chart"></i> Chart</h2>
-        <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div id="container" style="min-width: 30rem; height: 40rem; margin: 0 auto"></div>
     </div>
   </div><!-- /.row -->
 </div>
@@ -39,7 +47,11 @@
 $(function () {
     Highcharts.chart('container', {
         title: {
-            text: 'H(Q)',
+            text: 'Chart Y(x)',
+            x: -20 //center
+        },
+        subtitle: {
+            text: 'Click on a chart name to show/hide it.',
             x: -20 //center
         },
         xAxis: {
