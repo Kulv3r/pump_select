@@ -1,1 +1,1 @@
-web: gunicorn pump_select.app:create_app\(\) --bind 0.0.0.0:$PORT --workers 4 --worker-class gevent
+web: gunicorn pump_select.app:create_app\(\) --bind 0.0.0.0:$PORT --workers 4
