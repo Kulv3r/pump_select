@@ -5,7 +5,6 @@ from flask_login import login_required, login_user, logout_user
 
 from pump_select import data
 from pump_select.extensions import login_manager
-from pump_select.public.forms import CharacteristicValuesForm
 from pump_select.user.forms import RegisterForm, LoginForm
 from pump_select.user.models import User
 from pump_select.utils import flash_errors
@@ -15,40 +14,29 @@ blueprint = Blueprint('public', __name__, static_folder='../static')
 
 @blueprint.route('/', methods=['GET', 'POST'])
 def home():
-    H = np.array(data.H1)
-    Q = np.array(data.Q1)
-
-    points_series_data = [[q, data.H1[idx]] for idx, q in enumerate(data.Q1)]
-
-    polynoms = {}
-    polynoms_vals = {}
-    for n in (2, 4, 6):
-        polynom = np.polynomial.polynomial.polyfit(Q, H, n).tolist()
-        # It returns for an n=4
-        # [1.16035322e+02, -6.77159076e-04, 7.49052572e-06, -7.71847069e-08, 3.72781671e-11]
-        #       A                 B                 C              D               E
-        # so formula = A + Bx + Cx**2 + Dx**3 + Ex**4
-        x = data.Q1[0]
-        max_x = data.Q1[-1]
-        if max_x < x:
-            x, max_x = max_x, x
-        steps = 50
-        step = (max_x - x) / steps
-        series = []
-        while x < (max_x+step):
-        # for x in data.Q1:
-            # f = p[0] + p[1] * x**1 + p[2] * x**2 + ...
-            f = sum([(c * x**p) for p, c in enumerate(polynom)])
-            series.append([round(x, 1), round(f, 1)])
-            x += step
-
-        polynoms_vals[n] = series
+    points_series_data = [list(i) for i in zip(data.Q1, data.H1)]
 
     # form = CharacteristicValuesForm()
     # if form.validate_on_submit():
     #     1
     # elif request.method == 'POST':
     #     flash_errors(form)
+
+    polynoms_vals = {}
+    for n in (2, 4, 6):
+        polynom = np.polynomial.polynomial.polyfit(data.Q1, data.H1, n)
+
+        min_x = data.Q1[0]
+        max_x = data.Q1[-1]
+        if max_x < min_x:
+            min_x, max_x = max_x, min_x
+        steps = 50
+        step = (max_x - min_x) / steps
+
+        x_vals = [min_x + step*i for i in xrange(steps)]
+        x_series = np.polynomial.polynomial.polyval(x_vals, polynom).tolist()
+
+        polynoms_vals[n] = [list(i) for i in zip(x_vals, x_series)]
 
     return render_template(
         'public/home.html',
