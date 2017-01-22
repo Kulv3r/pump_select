@@ -3,7 +3,7 @@ import numpy as np
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
 
-from pump_select import data
+from pump_select.data import *
 from pump_select.extensions import login_manager
 from pump_select.public.forms import CharacteristicValuesForm
 from pump_select.user.forms import RegisterForm, LoginForm
@@ -13,50 +13,60 @@ from pump_select.utils import flash_errors
 blueprint = Blueprint('public', __name__, static_folder='../static')
 
 
+def polyvals(polynom, limits, steps=100):
+    min_x, max_x = limits
+    if max_x < min_x:
+        min_x, max_x = max_x, min_x
+    step = round((max_x - min_x) / steps, 1)
+
+    x_vals = [min_x + step * i for i in range(steps + 1)]
+    x_series = [round(i, 2) for i in
+                np.polynomial.polynomial.polyval(x_vals, polynom).tolist()]
+    return [list(i) for i in zip(x_vals, x_series)]
+
+
 @blueprint.route('/', methods=['GET', 'POST'])
 def home():
-    Q, H = data.Q1, data.H1
-
     form = CharacteristicValuesForm()
 
     if request.method == 'GET':
-        form.x_csv.data = Q
-        form.y_csv.data = H
+        form.Q_H.data = Q_H
+        form.H.data = H
+        form.Q_eff.data = Q_eff
+        form.eff.data = eff
+        form.Q_NPSHr.data = Q_NPSHr
+        form.NPSHr.data = NPSHr
 
-    if form.validate_on_submit():
-        Q = form.x_csv.data
-        H = form.y_csv.data
-
-    elif request.method == 'POST':
-        flash_errors(form)
-
-    points_series_data = [list(i) for i in zip(Q, H)]
-
-    polynoms_vals = {}
-    for n in (2, 4, 6, 8):
-        polynom = np.polynomial.polynomial.polyfit(Q, H, n)
-
-        min_x = Q[0]
-        max_x = Q[-1]
-        if max_x < min_x:
-            min_x, max_x = max_x, min_x
-        steps = len(Q)*10
-        step = round((max_x - min_x) / steps, 1)
-
-        x_vals = [min_x + step*i for i in xrange(steps+1)]
-        x_series = [round(i, 2) for i in
-                    np.polynomial.polynomial.polyval(x_vals, polynom).tolist()]
-
-        polynoms_vals[n] = [list(i) for i in zip(x_vals, x_series)]
-
-    form.x_csv.data = '\n'.join([str(i) for i in form.x_csv.data])
-    form.y_csv.data = '\n'.join([str(i) for i in form.y_csv.data])
+    # if form.validate_on_submit():
+    if form.is_submitted():
+        print 'POST'
+        print 'POST'
+        print 'POST'
+        if form.validate():
+            pass
+    #     Q = form.Q_csv.data
+    #     H = form.H_csv.data
+    #     efficiency_ = form.efficiency_csv.data
+    #     NPSHr_ = form.NPSHr_csv.data
+    #
+    # elif request.method == 'POST':
+    #     flash_errors(form)
+    #
+    # poly_n = 4
+    # polynom = np.polynomial.polynomial.polyfit(Q, H, poly_n)
+    # polynom_vals = polyvals(polynom, limits=[Q1[0], Q1[-1]])
+    #
+    # # Prepare values for the form rendering
+    # form.Q_csv.data = '\n'.join([str(i) for i in form.Q_csv.data])
+    # form.H_csv.data = '\n'.join([str(i) for i in form.H_csv.data])
+    # form.efficiency_csv.data = '\n'.join([str(i) for i in form.efficiency_csv.data])
+    # form.NPSHr_csv.data = '\n'.join([str(i) for i in form.NPSHr_csv.data])
 
     return render_template(
         'public/home.html',
         form=form,
-        points_series_data=points_series_data,
-        polynoms_vals=polynoms_vals,
+        points_series_data=H_Q,
+        # polynom_vals=polynom_vals,
     )
 
 

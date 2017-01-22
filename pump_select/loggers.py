@@ -9,7 +9,7 @@ class FakeLogger(object):
 
     @staticmethod
     def _log(msg, level):
-        print('\n - {} - \n'.format(level))
+        print('- {} -'.format(level))
         pprint(msg)
 
     def debug(self, msg):

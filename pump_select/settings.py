@@ -30,7 +30,6 @@ class DevConfig(ProdConfig):
     ENV = 'dev'
     DEBUG = True
     DEBUG_TB_ENABLED = True
-    WERKZEUG_DEBUG_PIN = 'off'
     ASSETS_DEBUG = True  # Don't bundle/minify static assets
     SQLALCHEMY_DATABASE_URI = os.environ.get('PUMP_SELECT_DATABASE_URI')
 
