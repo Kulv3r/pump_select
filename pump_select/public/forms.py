@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask_wtf import FlaskForm
-from wtforms import StringField
-from wtforms.validators import DataRequired
+from wtforms import StringField, SelectField
 from wtforms.widgets import TextArea
 
 
@@ -62,15 +61,11 @@ class CSVField(StringField):
 
 
 class CharacteristicValuesForm(FlaskForm):
-    Q_H = CSVField(
-        u'"Q" values, m3/h',
-        coerse_func=float,
-    )
     H = CSVField(
         u'"H" values, m',
         coerse_func=float,
     )
-    Q_eff = CSVField(
+    Q_H = CSVField(
         u'"Q" values, m3/h',
         coerse_func=float,
     )
@@ -78,11 +73,21 @@ class CharacteristicValuesForm(FlaskForm):
         u'"Efficiency" values, %%',
         coerse_func=float,
     )
-    Q_NPSHr = CSVField(
+    Q_eff = CSVField(
         u'"Q" values, m3/h',
         coerse_func=float,
     )
     NPSHr = CSVField(
         u'"NPSHr" values, ??',
         coerse_func=float,
+    )
+    Q_NPSHr = CSVField(
+        u'"Q" values, m3/h',
+        coerse_func=float,
+    )
+    polynom_n = SelectField(
+        u'Polynom power',
+        choices=[(i, str(i)) for i in range(3, 9)],
+        coerce=int,
+        default=4,
     )

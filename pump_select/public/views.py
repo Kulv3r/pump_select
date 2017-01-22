@@ -30,43 +30,31 @@ def home():
     form = CharacteristicValuesForm()
 
     if request.method == 'GET':
-        form.Q_H.data = Q_H
         form.H.data = H
-        form.Q_eff.data = Q_eff
+        form.Q_H.data = Q_H
         form.eff.data = eff
-        form.Q_NPSHr.data = Q_NPSHr
+        form.Q_eff.data = Q_eff
         form.NPSHr.data = NPSHr
+        form.Q_NPSHr.data = Q_NPSHr
 
-    # if form.validate_on_submit():
-    if form.is_submitted():
-        print 'POST'
-        print 'POST'
-        print 'POST'
-        if form.validate():
-            pass
-    #     Q = form.Q_csv.data
-    #     H = form.H_csv.data
-    #     efficiency_ = form.efficiency_csv.data
-    #     NPSHr_ = form.NPSHr_csv.data
-    #
-    # elif request.method == 'POST':
-    #     flash_errors(form)
-    #
-    # poly_n = 4
-    # polynom = np.polynomial.polynomial.polyfit(Q, H, poly_n)
-    # polynom_vals = polyvals(polynom, limits=[Q1[0], Q1[-1]])
-    #
-    # # Prepare values for the form rendering
-    # form.Q_csv.data = '\n'.join([str(i) for i in form.Q_csv.data])
-    # form.H_csv.data = '\n'.join([str(i) for i in form.H_csv.data])
-    # form.efficiency_csv.data = '\n'.join([str(i) for i in form.efficiency_csv.data])
-    # form.NPSHr_csv.data = '\n'.join([str(i) for i in form.NPSHr_csv.data])
+    if form.validate_on_submit():
+        pass
+        # Q = form.Q_csv.data
+        # H = form.H_csv.data
+        # efficiency_ = form.efficiency_csv.data
+        # NPSHr_ = form.NPSHr_csv.data
+
+    elif request.method == 'POST':
+        flash_errors(form)
+
+    polynom = np.polynomial.polynomial.polyfit(form.Q_H.data, form.H.data, form.polynom_n.data)
+    polynom_vals = polyvals(polynom, limits=[form.Q_H.data[0], form.Q_H.data[-1]])
 
     return render_template(
         'public/home.html',
         form=form,
         points_series_data=H_Q,
-        # polynom_vals=polynom_vals,
+        polynom_vals=polynom_vals,
     )
 
 
@@ -95,8 +83,7 @@ def register():
 @blueprint.route('/about/')
 def about():
     """About page."""
-    form = LoginForm(request.form)
-    return render_template('public/about.html', form=form)
+    return render_template('public/about.html')
 
 
 @login_manager.user_loader
