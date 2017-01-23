@@ -11,6 +11,9 @@
             height: 220px;
             margin: 0 auto;
         }
+        .right-val-col{
+            border-right: 1px dashed #AAA;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -20,13 +23,22 @@
                 <h2><i class="fa fa-edit"></i> Input values</h2>
                 <form class="form" method="POST" action="" role="form">
                     {{ form.csrf_token }}
-                    {% for field in form %}
-                        <div class="col-lg-2">
-                            {{ render_field(field) }}
-                        </div>
-                    {% endfor %}
+{#                    {% for field in form %}#}
+                        <div class="col-lg-2">{{ render_field(form.Q_H) }}</div>
+                        <div class="col-lg-2 right-val-col">{{ render_field(form.H) }}</div>
+                        <div class="col-lg-2">{{ render_field(form.Q_eff) }}</div>
+                        <div class="col-lg-2 right-val-col">{{ render_field(form.eff) }}</div>
+                        <div class="col-lg-2">{{ render_field(form.Q_NPSHr) }}</div>
+                        <div class="col-lg-2 right-val-col">{{ render_field(form.NPSHr) }}</div>
+                        <div class="col-lg-2">{{ render_field(form.H_Q_polynom_n) }}</div>
+                        <div class="col-lg-2"></div>
+                        <div class="col-lg-2">{{ render_field(form.eff_Q_polynom_n) }}</div>
+                        <div class="col-lg-2"></div>
+                        <div class="col-lg-2">{{ render_field(form.NPSHr_Q_polynom_n) }}</div>
+
+{#                    {% endfor %}#}
                     <div class="col-lg-2">
-                        <p><input class="btn btn-default btn-submit" type="submit" value="Submit"></p>
+                        <p><input class="btn btn-primary btn-submit" type="submit" value="Submit"></p>
                     </div>
                 </form>
             </div>
@@ -140,7 +152,7 @@
                         },
                         borderWidth: 0,
                         backgroundColor: 'none',
-                        pointFormat: '{point.y}',
+                        pointFormat: '{point.y} at {point.x}m3/h',
                         headerFormat: '',
                         shadow: false,
                         style: {
@@ -155,7 +167,7 @@
                             type: 'line',
                             color: Highcharts.getOptions().colors[i+3],
                             fillOpacity: 0.3,
-                            tooltip: {valueSuffix: ' m'}
+                            tooltip: {valueSuffix: dataset.suffix}
                         },
                         {
                             data: dataset.points,

@@ -3,7 +3,7 @@ import numpy as np
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
 
-from pump_select.data import *
+from pump_select import data
 from pump_select.extensions import login_manager
 from pump_select.loggers import logger
 from pump_select.public.forms import CharacteristicValuesForm
@@ -31,44 +31,52 @@ def home():
     form = CharacteristicValuesForm()
 
     if request.method == 'GET':
-        form.H.data = H
-        form.Q_H.data = Q_H
-        form.eff.data = eff
-        form.Q_eff.data = Q_eff
-        form.NPSHr.data = NPSHr
-        form.Q_NPSHr.data = Q_NPSHr
+        # for attr in ('H', 'Q_H', 'eff', 'Q_eff', 'NPSHr', 'Q_NPSHr'):
+        #     field = getattr(form, attr)
+        #     field.data = getattr(data, attr)
+        form.H.data = data.H
+        form.Q_H.data = data.Q_H
+        form.eff.data = data.eff
+        form.Q_eff.data = data.Q_eff
+        form.NPSHr.data = data.NPSHr
+        form.Q_NPSHr.data = data.Q_NPSHr
 
     if not form.validate_on_submit():
         flash_errors(form)
 
     polynom_vals = []
+    points = []
     for x, y, n in (
-            (form.Q_H.data, form.H.data, form.polynom_n.data),
-            (form.Q_eff.data, form.eff.data, form.polynom_n.data),
-            (form.Q_NPSHr.data, form.NPSHr.data, form.polynom_n.data),
+            (form.Q_H.data, form.H.data, 4),
+            (form.Q_eff.data, form.eff.data, form.eff_Q_polynom_n.data),
+            (form.Q_NPSHr.data, form.NPSHr.data, form.NPSHr_Q_polynom_n.data),
     ):
         polynom = np.polynomial.polynomial.polyfit(x, y, n)
         vals = polyvals(polynom, limits=[0, 1000])
         polynom_vals.append(vals)
+        points.append(data.list_zip(x, y))
 
     chart_data = [
         {
             'name': 'H(Q)',
             'data': polynom_vals[0],
+            'suffix': 'm',
             'valueDecimals': 0,
-            'points': H_Q,
+            'points': points[0],
         },
         {
             'name': 'Efficiency(Q)',
             'data': polynom_vals[1],
+            'suffix': '%',
             'valueDecimals': 1,
-            'points': eff_Q,
+            'points': points[1],
         },
         {
             'name': 'NPSHr(Q)',
             'data': polynom_vals[2],
+            'suffix': 'm',
             'valueDecimals': 2,
-            'points': NPSHr_Q,
+            'points': points[2],
         },
     ]
 

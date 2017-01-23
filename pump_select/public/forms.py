@@ -70,7 +70,7 @@ class CharacteristicValuesForm(FlaskForm):
         coerse_func=float,
     )
     eff = CSVField(
-        u'Efficiency, <br/>%%',
+        u'Efficiency, <br/>%',
         coerse_func=float,
     )
     Q_eff = CSVField(
@@ -85,9 +85,21 @@ class CharacteristicValuesForm(FlaskForm):
         u'Q, <br/>m3/h',
         coerse_func=float,
     )
-    polynom_n = SelectField(
-        u'Polynom <br/>power',
+    H_Q_polynom_n = SelectField(
+        u'H(Q) polynom power',
         choices=[(i, str(i)) for i in range(3, 9)],
         coerce=int,
         default=4,
+    )
+    eff_Q_polynom_n = SelectField(
+        u'Eff.(Q) polynom power',
+        choices=[(i, str(i)) for i in range(3, 9)],
+        coerce=int,
+        default=4,
+    )
+    NPSHr_Q_polynom_n = SelectField(
+        u'NPSHr(Q) polynom power',
+        choices=[(i, str(i)) for i in range(3, 9)],
+        coerce=int,
+        default=3,
     )
