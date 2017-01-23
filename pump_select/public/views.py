@@ -31,15 +31,9 @@ def home():
     form = CharacteristicValuesForm()
 
     if request.method == 'GET':
-        # for attr in ('H', 'Q_H', 'eff', 'Q_eff', 'NPSHr', 'Q_NPSHr'):
-        #     field = getattr(form, attr)
-        #     field.data = getattr(data, attr)
-        form.H.data = data.H
-        form.Q_H.data = data.Q_H
-        form.eff.data = data.eff
-        form.Q_eff.data = data.Q_eff
-        form.NPSHr.data = data.NPSHr
-        form.Q_NPSHr.data = data.Q_NPSHr
+        for attr in ('H', 'Q_H', 'eff', 'Q_eff', 'NPSHr', 'Q_NPSHr'):
+            field = getattr(form, attr)
+            field.data = getattr(data, attr)
 
     if not form.validate_on_submit():
         flash_errors(form)
@@ -47,7 +41,7 @@ def home():
     polynom_vals = []
     points = []
     for x, y, n in (
-            (form.Q_H.data, form.H.data, 4),
+            (form.Q_H.data, form.H.data, form.H_Q_polynom_n.data),
             (form.Q_eff.data, form.eff.data, form.eff_Q_polynom_n.data),
             (form.Q_NPSHr.data, form.NPSHr.data, form.NPSHr_Q_polynom_n.data),
     ):
