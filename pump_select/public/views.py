@@ -5,6 +5,7 @@ from flask_login import login_required, login_user, logout_user
 
 from pump_select.data import *
 from pump_select.extensions import login_manager
+from pump_select.loggers import logger
 from pump_select.public.forms import CharacteristicValuesForm
 from pump_select.user.forms import RegisterForm, LoginForm
 from pump_select.user.models import User
@@ -37,25 +38,41 @@ def home():
         form.NPSHr.data = NPSHr
         form.Q_NPSHr.data = Q_NPSHr
 
-    if form.validate_on_submit():
-        pass
-        # Q = form.Q_csv.data
-        # H = form.H_csv.data
-        # efficiency_ = form.efficiency_csv.data
-        # NPSHr_ = form.NPSHr_csv.data
-
-    elif request.method == 'POST':
+    if not form.validate_on_submit():
         flash_errors(form)
 
-    polynom = np.polynomial.polynomial.polyfit(form.Q_H.data, form.H.data, form.polynom_n.data)
-    polynom_vals = polyvals(polynom, limits=[form.Q_H.data[0], form.Q_H.data[-1]])
+    polynom_vals = []
+    for x, y, n in (
+            (form.Q_H.data, form.H.data, form.polynom_n.data),
+            (form.Q_eff.data, form.eff.data, form.polynom_n.data),
+            (form.Q_NPSHr.data, form.NPSHr.data, form.polynom_n.data),
+    ):
+        polynom = np.polynomial.polynomial.polyfit(x, y, n)
+        vals = polyvals(polynom, limits=[0, 1000])
+        polynom_vals.append(vals)
 
-    return render_template(
-        'public/home.html',
-        form=form,
-        points_series_data=H_Q,
-        polynom_vals=polynom_vals,
-    )
+    chart_data = [
+        {
+            'name': 'H(Q)',
+            'data': polynom_vals[0],
+            'valueDecimals': 0,
+            'points': H_Q,
+        },
+        {
+            'name': 'Efficiency(Q)',
+            'data': polynom_vals[1],
+            'valueDecimals': 1,
+            'points': eff_Q,
+        },
+        {
+            'name': 'NPSHr(Q)',
+            'data': polynom_vals[2],
+            'valueDecimals': 2,
+            'points': NPSHr_Q,
+        },
+    ]
+
+    return render_template('public/home.html', **locals())
 
 
 @blueprint.route('/logout/')

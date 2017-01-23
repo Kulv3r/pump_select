@@ -62,31 +62,31 @@ class CSVField(StringField):
 
 class CharacteristicValuesForm(FlaskForm):
     H = CSVField(
-        u'"H" values, m',
+        u'H, <br/>m',
         coerse_func=float,
     )
     Q_H = CSVField(
-        u'"Q" values, m3/h',
+        u'Q, <br/>m3/h',
         coerse_func=float,
     )
     eff = CSVField(
-        u'"Efficiency" values, %%',
+        u'Efficiency, <br/>%%',
         coerse_func=float,
     )
     Q_eff = CSVField(
-        u'"Q" values, m3/h',
+        u'Q, <br/>m3/h',
         coerse_func=float,
     )
     NPSHr = CSVField(
-        u'"NPSHr" values, ??',
+        u'NPSHr, <br/>m',
         coerse_func=float,
     )
     Q_NPSHr = CSVField(
-        u'"Q" values, m3/h',
+        u'Q, <br/>m3/h',
         coerse_func=float,
     )
     polynom_n = SelectField(
-        u'Polynom power',
+        u'Polynom <br/>power',
         choices=[(i, str(i)) for i in range(3, 9)],
         coerce=int,
         default=4,

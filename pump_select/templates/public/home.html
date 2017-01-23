@@ -5,30 +5,31 @@
         textarea.form-control {
             height: 50rem;
         }
+        .chart {
+            min-width: 320px;
+            max-width: 800px;
+            height: 220px;
+            margin: 0 auto;
+        }
     </style>
 {% endblock %}
 {% block content %}
-    <!-- Main jumbotron for a primary marketing message or call to action -->
-    {#<div class="jumbotron">#}
-    {#  <h1>Welcome to Pump Select</h1>#}
-    {#</div><!-- /.jumbotron -->#}
-
     <div class="body-content">
         <div class="row">
-            <h2><i class="fa fa-edit"></i> Input values</h2>
-            <form class="form" method="POST" action="" role="form">
-                {{ form.csrf_token }}
-                {% for field in form %}
+            <div class="col-lg-6">
+                <h2><i class="fa fa-edit"></i> Input values</h2>
+                <form class="form" method="POST" action="" role="form">
+                    {{ form.csrf_token }}
+                    {% for field in form %}
+                        <div class="col-lg-2">
+                            {{ render_field(field) }}
+                        </div>
+                    {% endfor %}
                     <div class="col-lg-2">
-                        {{ render_field(field) }}
+                        <p><input class="btn btn-default btn-submit" type="submit" value="Submit"></p>
                     </div>
-                {% endfor %}
-                <div class="col-lg-12">
-                    <p><input class="btn btn-default btn-submit" type="submit" value="Submit"></p>
-                </div>
-            </form>
-        </div>
-        <div class="row">
+                </form>
+            </div>
             <div class="col-lg-6">
                 <h2><i class="fa fa-line-chart"></i> Chart</h2>
                 <div id="container"></div>
@@ -40,16 +41,15 @@
 {% block js %}
     <script>
         $(function () {
-
             /**
              * In order to synchronize tooltips and crosshairs, override the
              * built-in events with handlers defined on the parent element.
              */
             $('#container').bind('mousemove touchmove touchstart', function (e) {
                 var chart,
-                    point,
-                    i,
-                    event;
+                        point,
+                        i,
+                        event;
 
                 for (i = 0; i < Highcharts.charts.length; i = i + 1) {
                     chart = Highcharts.charts[i];
@@ -87,83 +87,84 @@
                     Highcharts.each(Highcharts.charts, function (chart) {
                         if (chart !== thisChart) {
                             if (chart.xAxis[0].setExtremes) { // It is null while updating
-                                chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, { trigger: 'syncExtremes' });
+                                chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, {trigger: 'syncExtremes'});
                             }
                         }
                     });
                 }
             }
 
-            $.getJSON('https://www.highcharts.com/samples/data/jsonp.php?filename=activity.json&callback=?', function (activity) {
-                $.each(activity.datasets, function (i, dataset) {
+            var chart_data = {{ chart_data|safe }};
 
-                    // Add X values
-                    dataset.data = Highcharts.map(dataset.data, function (val, j) {
-                        return [activity.xData[j], val];
-                    });
-
-                    $('<div class="chart">')
-                        .appendTo('#container')
-                        .highcharts({
-                            chart: {
-                                marginLeft: 40, // Keep all charts left aligned
-                                spacingTop: 20,
-                                spacingBottom: 20
-                            },
-                            title: {
-                                text: dataset.name,
-                                align: 'left',
-                                margin: 0,
-                                x: 30
-                            },
-                            credits: {
-                                enabled: false
-                            },
-                            legend: {
-                                enabled: false
-                            },
-                            xAxis: {
-                                crosshair: true,
-                                events: {
-                                    setExtremes: syncExtremes
-                                },
-                                labels: {
-                                    format: '{value} km'
-                                }
-                            },
-                            yAxis: {
-                                title: {
-                                    text: null
-                                }
-                            },
-                            tooltip: {
-                                positioner: function () {
-                                    return {
-                                        x: this.chart.chartWidth - this.label.width, // right aligned
-                                        y: -1 // align to title
-                                    };
-                                },
-                                borderWidth: 0,
-                                backgroundColor: 'none',
-                                pointFormat: '{point.y}',
-                                headerFormat: '',
-                                shadow: false,
-                                style: {
-                                    fontSize: '12px'
-                                },
-                                valueDecimals: dataset.valueDecimals
-                            },
-                            series: [{
-                                data: dataset.data,
-                                name: dataset.name,
-                                type: dataset.type,
-                                color: Highcharts.getOptions().colors[i],
-                                fillOpacity: 0.3,
-                                tooltip: {
-                                    valueSuffix: ' ' + dataset.unit
-                                }
-                            }]
-                        });
+            $.each(chart_data, function (i, dataset) {
+                $('<div class="chart">')
+                    .appendTo('#container')
+                    .highcharts({
+                    chart: {
+                        marginLeft: 40, // Keep all charts left aligned
+                        spacingTop: 20,
+                        spacingBottom: 20
+                    },
+                    title: {
+                        text: dataset.name,
+                        align: 'left',
+                        margin: 0,
+                        x: 30
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    xAxis: {
+                        crosshair: true,
+                        events: {
+                            setExtremes: syncExtremes
+                        },
+                        labels: {
+                            format: '{value} m3/h'
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: null
+                        }
+                    },
+                    tooltip: {
+                        positioner: function () {
+                            return {
+                                x: this.chart.chartWidth - this.label.width, // right aligned
+                                y: -1 // align to title
+                            };
+                        },
+                        borderWidth: 0,
+                        backgroundColor: 'none',
+                        pointFormat: '{point.y}',
+                        headerFormat: '',
+                        shadow: false,
+                        style: {
+                            fontSize: '12px'
+                        },
+                        valueDecimals: dataset.valueDecimals
+                    },
+                    series: [
+                        {
+                            data: dataset.data,
+                            name: dataset.name,
+                            type: 'line',
+                            color: Highcharts.getOptions().colors[i+3],
+                            fillOpacity: 0.3,
+                            tooltip: {valueSuffix: ' m'}
+                        },
+                        {
+                            data: dataset.points,
+                            type: 'line',
+                            color: 'grey',
+                            lineWidth: 0,
+                            marker: {states: {hover: {enabled: false}}}
+                        }
+                    ]
                 });
             });
         });
