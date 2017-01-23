@@ -60,7 +60,7 @@
         {% for category, message in messages %}
         <div class="alert alert-{{ category }}">
           <a class="close" title="Close" href="#" data-dismiss="alert">&times;</a>
-         {{message}}
+         {{message|safe}}
         </div><!-- end .alert -->
         {% endfor %}
       </div><!-- end col-md -->

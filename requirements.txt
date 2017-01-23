@@ -1,5 +1,6 @@
 # Science stuff
 numpy==1.12.0
+scipy==0.18.1
 
 # Flask
 Flask==0.12

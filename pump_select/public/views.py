@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import numpy as np
+from numpy.polynomial import polynomial as P
+from scipy.optimize import minimize_scalar
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
 
@@ -21,8 +22,7 @@ def polyvals(polynom, limits, steps=100):
     step = round((max_x - min_x) / steps, 1)
 
     x_vals = [min_x + step * i for i in range(steps + 1)]
-    x_series = [round(i, 2) for i in
-                np.polynomial.polynomial.polyval(x_vals, polynom).tolist()]
+    x_series = [round(i, 2) for i in P.polyval(x_vals, polynom).tolist()]
     return [list(i) for i in zip(x_vals, x_series)]
 
 
@@ -30,6 +30,7 @@ def polyvals(polynom, limits, steps=100):
 def home():
     form = CharacteristicValuesForm()
 
+    # Fill the form with the default example data
     if request.method == 'GET':
         for attr in ('H', 'Q_H', 'eff', 'Q_eff', 'NPSHr', 'Q_NPSHr'):
             field = getattr(form, attr)
@@ -38,6 +39,8 @@ def home():
     if not form.validate_on_submit():
         flash_errors(form)
 
+    # Calculate polynomes based on the points given
+    polynoms = []
     polynom_vals = []
     points = []
     for x, y, n in (
@@ -45,9 +48,13 @@ def home():
             (form.Q_eff.data, form.eff.data, form.eff_Q_polynom_n.data),
             (form.Q_NPSHr.data, form.NPSHr.data, form.NPSHr_Q_polynom_n.data),
     ):
-        polynom = np.polynomial.polynomial.polyfit(x, y, n)
+        polynom = P.polyfit(x, y, n)
+        polynoms.append(polynom)
+
         vals = polyvals(polynom, limits=[0, 1000])
         polynom_vals.append(vals)
+
+        # Also convert points to chart series
         points.append(data.list_zip(x, y))
 
     chart_data = [
@@ -73,6 +80,25 @@ def home():
             'points': points[2],
         },
     ]
+
+    H_Q_polynom, eff_Q_polynom, NPSHr_Q_polynom = polynoms
+
+    # Get max efficiency
+    poly_der = P.polyder(eff_Q_polynom)  # Differentiate a polynomial.
+    roots = P.polyroots(poly_der)  # Compute the roots of a polynomial.
+    real_roots = [r.real for r in roots if not r.imag]
+    if len(real_roots) != 1:
+        flash(u'Invalid real roots for Eff.(Q) function: {}. '
+              u'Should be only 1 real root.'.format(real_roots),
+              category='danger')
+    else:
+        Qnom = real_roots[0]
+        eff_max = P.polyval(Qnom, eff_Q_polynom)
+        Hnom = P.polyval(Qnom, H_Q_polynom)
+        flash(u'Qnom={Qnom} &nbsp;&nbsp;&nbsp; '
+              u'Hnom={Hnom} &nbsp;&nbsp;&nbsp; '
+              u'Eff_max={eff_max}'.format(**locals()),
+              category='success')
 
     return render_template('public/home.html', **locals())
 
