@@ -116,11 +116,3 @@ class CharacteristicValuesForm(FlaskForm):
     )
     # `rpm_custom` is shown only if 'rpm_preset_other_option' is selected in `rpm_preset`.
     rpm_custom = IntegerField(u'Other:', validators=[Optional()])
-    rpm = HiddenField(validators=[Optional()])  # end data will be stored here
-
-    def validate(self):
-        initial_validation = super(self.__class__, self).validate()
-        if not initial_validation:
-            return False
-
-        self.rpm.data = self.rpm_preset.data or self.rpm_custom.data
