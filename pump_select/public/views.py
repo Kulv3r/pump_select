@@ -21,7 +21,7 @@ def polyvals(polynom, limits, steps=100):
         min_x, max_x = max_x, min_x
     step = round((max_x - min_x) / steps, 1)
 
-    x_vals = [min_x + step * i for i in range(steps + 1)]
+    x_vals = [round(min_x + step * i, 0) for i in range(steps + 1)]
     x_series = [round(i, 2) for i in P.polyval(x_vals, polynom).tolist()]
     return [list(i) for i in zip(x_vals, x_series)]
 
@@ -39,6 +39,11 @@ def home():
     if not form.validate_on_submit():
         flash_errors(form)
 
+    # Get calculating limits of Q
+    limit_from = min(form.Q_H.data[0], form.Q_eff.data[0], form.Q_NPSHr.data[0])
+    limit_to = max(form.Q_H.data[-1], form.Q_eff.data[-1], form.Q_NPSHr.data[-1])
+    limits = limit_from, limit_to
+
     # Calculate polynomes based on the points given
     polynoms = []
     polynom_vals = []
@@ -51,7 +56,7 @@ def home():
         polynom = P.polyfit(x, y, n)
         polynoms.append(polynom)
 
-        vals = polyvals(polynom, limits=[0, 1000])
+        vals = polyvals(polynom, limits=limits)
         polynom_vals.append(vals)
 
         # Also convert points to chart series
@@ -87,18 +92,20 @@ def home():
     poly_der = P.polyder(eff_Q_polynom)  # Differentiate a polynomial.
     roots = P.polyroots(poly_der)  # Compute the roots of a polynomial.
     real_roots = [r.real for r in roots if not r.imag]
-    if len(real_roots) != 1:
-        flash(u'Invalid real roots for Eff.(Q) function: {}. '
-              u'Should be only 1 real root.'.format(real_roots),
-              category='danger')
-    else:
-        Qnom = real_roots[0]
-        eff_max = P.polyval(Qnom, eff_Q_polynom)
-        Hnom = P.polyval(Qnom, H_Q_polynom)
-        flash(u'Qnom={Qnom} &nbsp;&nbsp;&nbsp; '
-              u'Hnom={Hnom} &nbsp;&nbsp;&nbsp; '
-              u'Eff_max={eff_max}'.format(**locals()),
-              category='success')
+
+    # Remove roots out of the limits
+    roots_in_limits = [r for r in real_roots if limit_from <= r <= limit_to]
+    # Get actual function values for each root (extremum)
+    roots_max = [
+        (P.polyval(r, eff_Q_polynom), r)
+        for r in roots_in_limits
+    ]
+    Qbep, eff_max = max(roots_max)
+    Hbep = P.polyval(Qbep, H_Q_polynom)
+    flash(u'Qbep={Qbep} &nbsp;&nbsp;&nbsp; '
+          u'Hbep={Hbep} &nbsp;&nbsp;&nbsp; '
+          u'Eff_max={eff_max}'.format(**locals()),
+          category='success')
 
     return render_template('public/home.html', **locals())
 
