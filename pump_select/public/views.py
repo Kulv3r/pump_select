@@ -107,16 +107,6 @@ def home():
     rpm = form.rpm_preset.data or form.rpm_custom.data
     ns = 3.65 * rpm * ((Qbep / 3600.0)**0.5) / (Hbep**0.75)
 
-    flash_msg = (
-        u'Qbep={Qbep} '
-        u'Hbep={Hbep} '
-        u'Eff_max={eff_max} '
-        u'ns={ns} '
-        .format(**locals())
-        .replace(u' ', u'&nbsp;&nbsp;&nbsp;')
-    )
-    flash(flash_msg, category='success')
-
     return render_template('public/home.html', **locals())
 
 

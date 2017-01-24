@@ -14,12 +14,15 @@
         .right-val-col{
             border-right: 1px dashed #AAA;
         }
+        .left-val-col{
+            padding-left: 30px;
+        }
     </style>
 {% endblock %}
 {% block content %}
     <div class="body-content">
         <div class="row">
-            <div class="col-lg-6">
+            <div class="col-lg-6 right-val-col">
                 <h2><i class="fa fa-edit"></i> Input values</h2>
                 <form class="form" method="POST" action="" role="form">
                     {{ form.csrf_token }}
@@ -29,7 +32,7 @@
                         <div class="col-lg-2">{{ render_field(form.Q_eff) }}</div>
                         <div class="col-lg-2 right-val-col">{{ render_field(form.eff) }}</div>
                         <div class="col-lg-2">{{ render_field(form.Q_NPSHr) }}</div>
-                        <div class="col-lg-2 right-val-col">{{ render_field(form.NPSHr) }}</div>
+                        <div class="col-lg-2">{{ render_field(form.NPSHr) }}</div>
                     </div>
                     <div class="row">
                         <div class="col-lg-2">{{ render_field(form.H_Q_polynom_n) }}</div>
@@ -49,9 +52,32 @@
                     </div>
                 </form>
             </div>
-            <div class="col-lg-6">
-                <h2><i class="fa fa-line-chart"></i> Chart</h2>
-                <div id="container"></div>
+            <div class="col-lg-6 left-val-col">
+                <div class="row">
+                    <h2><i class="fa fa-line-chart"></i> Charts</h2>
+                    <div id="container"></div>
+                </div>
+                <div class="row">
+                    <h2><i class="fa fa-table"></i> Characteristics</h2>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Qbep, m3/h</th>
+                            <th>Hbep, m</th>
+                            <th>max Eff, %</th>
+                            <th>ns</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{{ Qbep|round }}</td>
+                            <td>{{ Hbep|round }}</td>
+                            <td>{{ eff_max|round }}</td>
+                            <td>{{ ns|round }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div><!-- /.row -->
     </div>
@@ -59,14 +85,17 @@
 
 {% block js %}
     <script>
-        $(function () {
-            $('#rpm_preset').on('change', function() {
-                if (this.value == 0) {
+        function update_rpm() {
+            if ($('#rpm_preset').val() == 0) {
                     $('#rpm-custom-div').fadeIn();
                 } else {
                     $('#rpm-custom-div').fadeOut();
                 }
-            });
+        }
+        $('#rpm_preset').on('change', update_rpm);
+
+        $(function () {
+            update_rpm();
 
 
             /**

@@ -109,10 +109,10 @@ class CharacteristicValuesForm(FlaskForm):
     )
     rpm_preset_other_option = 0, u'other...'
     rpm_preset = SelectField(
-        u'Rev. per min',
+        u'RPM',
         choices=RPM.ALL_AS_OPTIONS + [rpm_preset_other_option],
         coerce=int,
         default=RPM.RPM_1500,
     )
     # `rpm_custom` is shown only if 'rpm_preset_other_option' is selected in `rpm_preset`.
-    rpm_custom = IntegerField(u'Other:', validators=[Optional()])
+    rpm_custom = IntegerField(u'Custom RPM:', validators=[Optional()])
