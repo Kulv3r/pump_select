@@ -23,22 +23,29 @@
                 <h2><i class="fa fa-edit"></i> Input values</h2>
                 <form class="form" method="POST" action="" role="form">
                     {{ form.csrf_token }}
-{#                    {% for field in form %}#}
+                    <div class="row">
                         <div class="col-lg-2">{{ render_field(form.Q_H) }}</div>
                         <div class="col-lg-2 right-val-col">{{ render_field(form.H) }}</div>
                         <div class="col-lg-2">{{ render_field(form.Q_eff) }}</div>
                         <div class="col-lg-2 right-val-col">{{ render_field(form.eff) }}</div>
                         <div class="col-lg-2">{{ render_field(form.Q_NPSHr) }}</div>
                         <div class="col-lg-2 right-val-col">{{ render_field(form.NPSHr) }}</div>
+                    </div>
+                    <div class="row">
                         <div class="col-lg-2">{{ render_field(form.H_Q_polynom_n) }}</div>
                         <div class="col-lg-2"></div>
                         <div class="col-lg-2">{{ render_field(form.eff_Q_polynom_n) }}</div>
                         <div class="col-lg-2"></div>
                         <div class="col-lg-2">{{ render_field(form.NPSHr_Q_polynom_n) }}</div>
-
-{#                    {% endfor %}#}
-                    <div class="col-lg-2">
-                        <p><input class="btn btn-primary btn-submit" type="submit" value="Submit"></p>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-4">{{ render_field(form.rpm_preset) }}</div>
+                        <div id="rpm-custom-div" class="col-lg-4" style="display: none">{{ render_field(form.rpm_custom) }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-2">
+                            <p><input class="btn btn-primary btn-submit" type="submit" value="Submit"></p>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -53,6 +60,15 @@
 {% block js %}
     <script>
         $(function () {
+            $('#rpm_preset').on('change', function() {
+                if (this.value == 0) {
+                    $('#rpm-custom-div').fadeIn();
+                } else {
+                    $('#rpm-custom-div').fadeOut();
+                }
+            });
+
+
             /**
              * In order to synchronize tooltips and crosshairs, override the
              * built-in events with handlers defined on the parent element.

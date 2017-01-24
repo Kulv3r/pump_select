@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField
+from wtforms import StringField, SelectField, HiddenField
+from wtforms.fields.html5 import IntegerField
+from wtforms.validators import Optional
 from wtforms.widgets import TextArea
+
+from pump_select.public.constants import RPM
 
 
 class CSVField(StringField):
@@ -103,3 +107,20 @@ class CharacteristicValuesForm(FlaskForm):
         coerce=int,
         default=3,
     )
+    rpm_preset_other_option = 0, u'other...'
+    rpm_preset = SelectField(
+        u'Rev. per min',
+        choices=RPM.ALL_AS_OPTIONS + [rpm_preset_other_option],
+        coerce=int,
+        default=RPM.RPM_1500,
+    )
+    # `rpm_custom` is shown only if 'rpm_preset_other_option' is selected in `rpm_preset`.
+    rpm_custom = IntegerField(u'Other:', validators=[Optional()])
+    rpm = HiddenField(validators=[Optional()])  # end data will be stored here
+
+    def validate(self):
+        initial_validation = super(self.__class__, self).validate()
+        if not initial_validation:
+            return False
+
+        self.rpm.data = self.rpm_preset.data or self.rpm_custom.data

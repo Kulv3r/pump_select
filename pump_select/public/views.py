@@ -100,12 +100,21 @@ def home():
         (P.polyval(r, eff_Q_polynom), r)
         for r in roots_in_limits
     ]
-    Qbep, eff_max = max(roots_max)
+    eff_max, Qbep = max(roots_max)
     Hbep = P.polyval(Qbep, H_Q_polynom)
-    flash(u'Qbep={Qbep} &nbsp;&nbsp;&nbsp; '
-          u'Hbep={Hbep} &nbsp;&nbsp;&nbsp; '
-          u'Eff_max={eff_max}'.format(**locals()),
-          category='success')
+
+    # Calculate ns
+    ns = 3.65 * form.rpm.data * ((Qbep / 3600.0)**0.5) / (Hbep**0.75)
+
+    flash_msg = (
+        u'Qbep={Qbep} '
+        u'Hbep={Hbep} '
+        u'Eff_max={eff_max} '
+        u'ns={ns} '
+        .format(**locals())
+        .replace(u' ', u'&nbsp;&nbsp;&nbsp;')
+    )
+    flash(flash_msg, category='success')
 
     return render_template('public/home.html', **locals())
 
