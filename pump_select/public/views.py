@@ -26,6 +26,27 @@ def polyvals(polynom, limits, steps=100):
     return [list(i) for i in zip(x_vals, x_series)]
 
 
+def max_val(polynom, limits):
+    limit_from, limit_to = limits
+
+    # Get max efficiency
+    poly_der = P.polyder(polynom)  # Differentiate a polynomial.
+    roots = P.polyroots(poly_der)  # Compute the roots of a polynomial.
+    real_roots = [r.real for r in roots if not r.imag]
+
+    # Remove roots out of the limits
+    roots_in_limits = [r for r in real_roots if limit_from < r < limit_to]
+
+    # Get actual function values for each root (extremum)
+    roots_max = [
+        (P.polyval(r, polynom), r)
+        for r in roots_in_limits
+    ]
+    f_val, root = max(roots_max)
+
+    return f_val, root
+
+
 @blueprint.route('/', methods=['GET', 'POST'])
 def home():
     form = CharacteristicValuesForm()
@@ -89,18 +110,7 @@ def home():
     H_Q_polynom, eff_Q_polynom, NPSHr_Q_polynom = polynoms
 
     # Get max efficiency
-    poly_der = P.polyder(eff_Q_polynom)  # Differentiate a polynomial.
-    roots = P.polyroots(poly_der)  # Compute the roots of a polynomial.
-    real_roots = [r.real for r in roots if not r.imag]
-
-    # Remove roots out of the limits
-    roots_in_limits = [r for r in real_roots if limit_from <= r <= limit_to]
-    # Get actual function values for each root (extremum)
-    roots_max = [
-        (P.polyval(r, eff_Q_polynom), r)
-        for r in roots_in_limits
-    ]
-    eff_max, Qbep = max(roots_max)
+    eff_max, Qbep = max_val(eff_Q_polynom, limits)
     Hbep = P.polyval(Qbep, H_Q_polynom)
 
     # Calculate ns
