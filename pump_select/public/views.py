@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from numpy.polynomial import polynomial as P
-from scipy.optimize import minimize_scalar
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import login_required, login_user, logout_user
+from flask_login import login_required, logout_user
 
 from pump_select import data
 from pump_select.extensions import login_manager
 from pump_select.loggers import logger
+from pump_select.public.constants import *
 from pump_select.public.forms import CharacteristicValuesForm
-from pump_select.user.forms import RegisterForm, LoginForm
+from pump_select.user.forms import RegisterForm
 from pump_select.user.models import User
 from pump_select.utils import flash_errors
 
@@ -42,8 +42,10 @@ def max_val(polynom, limits):
         (P.polyval(r, polynom), r)
         for r in roots_in_limits
     ]
-    f_val, root = max(roots_max)
+    if not roots_max:
+        return
 
+    f_val, root = max(roots_max)
     return f_val, root
 
 
@@ -110,8 +112,8 @@ def home():
     H_Q_polynom, eff_Q_polynom, NPSHr_Q_polynom = polynoms
 
     # Get max efficiency
-    eff_max, Qbep = max_val(eff_Q_polynom, limits)
-    Hbep = P.polyval(Qbep, H_Q_polynom)
+    eff_max, Qbep = max_val(eff_Q_polynom, limits) or '?', '?'
+    Hbep = P.polyval(Qbep, H_Q_polynom) if eff_max != '?' else '?'
 
     # Calculate ns
     rpm = form.rpm_preset.data or form.rpm_custom.data
