@@ -20,14 +20,14 @@ blueprint = Blueprint('public', __name__, static_folder='../static')
 def home():
     form = CharacteristicValuesForm()
 
-    # Fill the form with the default example data
-    if request.method == 'GET':
+    if form.is_submitted():
+        if not form.validate():
+            flash_errors(form)
+    else:
+        # Fill the form with the default example data
         for attr in ('H', 'Q_H', 'EFF', 'Q_EFF', 'NPSHr', 'Q_NPSHr'):
             field = getattr(form, attr)
             field.data = getattr(data, attr)
-
-    if not form.validate_on_submit():
-        flash_errors(form)
 
     pump = Pump()
     form.populate_obj(pump)
