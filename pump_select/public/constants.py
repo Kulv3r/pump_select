@@ -10,3 +10,5 @@ class RPM(Constant):
 
 
 RPM.repr = dict([(rpm, str(rpm)) for rpm in RPM.ALL_])
+
+CORRECTION_ACCURACY = 10**(-5)

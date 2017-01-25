@@ -29,21 +29,28 @@
                     <div class="row">
                         <div class="col-lg-2">{{ render_field(form.Q_H) }}</div>
                         <div class="col-lg-2 right-val-col">{{ render_field(form.H) }}</div>
-                        <div class="col-lg-2">{{ render_field(form.Q_eff) }}</div>
-                        <div class="col-lg-2 right-val-col">{{ render_field(form.eff) }}</div>
+                        <div class="col-lg-2">{{ render_field(form.Q_EFF) }}</div>
+                        <div class="col-lg-2 right-val-col">{{ render_field(form.EFF) }}</div>
                         <div class="col-lg-2">{{ render_field(form.Q_NPSHr) }}</div>
                         <div class="col-lg-2">{{ render_field(form.NPSHr) }}</div>
                     </div>
+{#                    <h4>Q/H/Efficiency correction point</h4>#}
+{#                    <div class="row">#}
+{#                        <div class="col-lg-4">{{ render_field(form.Qcor) }}</div>#}
+{#                        <div class="col-lg-4">{{ render_field(form.Hcor) }}</div>#}
+{#                        <div class="col-lg-4">{{ render_field(form.EFFcor) }}</div>#}
+{#                    </div>#}
+                    <h4>Polynom powers, adjust if nesessary</h4>
                     <div class="row">
-                        <div class="col-lg-2">{{ render_field(form.H_Q_polynom_n) }}</div>
-                        <div class="col-lg-2"></div>
-                        <div class="col-lg-2">{{ render_field(form.eff_Q_polynom_n) }}</div>
-                        <div class="col-lg-2"></div>
-                        <div class="col-lg-2">{{ render_field(form.NPSHr_Q_polynom_n) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.H_Q_polynom_n) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.EFF_Q_polynom_n) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.NPSHr_Q_polynom_n) }}</div>
                     </div>
+                    <h4>Engine Revolutions per minute</h4>
                     <div class="row">
                         <div class="col-lg-4">{{ render_field(form.rpm_preset) }}</div>
-                        <div id="rpm-custom-div" class="col-lg-4" style="display: none">{{ render_field(form.rpm_custom) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.rpm_custom) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.ns) }}</div>
                     </div>
                     <div class="row">
                         <div class="col-lg-2">
@@ -70,10 +77,10 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <td>{{ Qbep|round }}</td>
-                            <td>{{ Hbep|round }}</td>
-                            <td>{{ eff_max|round }}</td>
-                            <td>{{ ns|round }}</td>
+                            <td>{{ pump.Qbep|round }}</td>
+                            <td>{{ pump.Hbep|round }}</td>
+                            <td>{{ pump.EFF_max|round }}</td>
+                            <td>{{ pump.ns|round }}</td>
                         </tr>
                         </tbody>
                     </table>
@@ -86,10 +93,12 @@
 {% block js %}
     <script>
         function update_rpm() {
+            var $formField = $('#rpm_custom').parent();
+
             if ($('#rpm_preset').val() == 0) {
-                    $('#rpm-custom-div').fadeIn();
+                    $formField.fadeIn();
                 } else {
-                    $('#rpm-custom-div').fadeOut();
+                    $formField.fadeOut();
                 }
         }
         $('#rpm_preset').on('change', update_rpm);

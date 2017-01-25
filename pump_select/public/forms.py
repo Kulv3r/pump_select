@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, HiddenField
+from wtforms import StringField, SelectField, HiddenField, FloatField
 from wtforms.fields.html5 import IntegerField
 from wtforms.validators import Optional
 from wtforms.widgets import TextArea
+from wtforms_components import read_only
 
 from pump_select.public.constants import RPM
 
@@ -11,8 +12,8 @@ from pump_select.public.constants import RPM
 class CSVField(StringField):
     widget = TextArea()
 
-    def __init__(self, label=None, coerse_func=None, delimiter=None, *args, **kwargs):
-        self.coerse_func = coerse_func or str
+    def __init__(self, label=None, coerse_func=float, delimiter=None, *args, **kwargs):
+        self.coerse_func = coerse_func
         self.delimiter = delimiter
 
         super(StringField, self).__init__(label, *args, **kwargs)
@@ -65,44 +66,31 @@ class CSVField(StringField):
 
 
 class CharacteristicValuesForm(FlaskForm):
-    H = CSVField(
-        u'H, <br/>m',
-        coerse_func=float,
-    )
-    Q_H = CSVField(
-        u'Q, <br/>m3/h',
-        coerse_func=float,
-    )
-    eff = CSVField(
-        u'Efficiency, <br/>%',
-        coerse_func=float,
-    )
-    Q_eff = CSVField(
-        u'Q, <br/>m3/h',
-        coerse_func=float,
-    )
-    NPSHr = CSVField(
-        u'NPSHr, <br/>m',
-        coerse_func=float,
-    )
-    Q_NPSHr = CSVField(
-        u'Q, <br/>m3/h',
-        coerse_func=float,
-    )
+    H = CSVField(u'H, <br/>m')
+    Q_H = CSVField(u'Q, <br/>m3/h')
+    EFF = CSVField(u'Efficiency, <br/>%')
+    Q_EFF = CSVField(u'Q, <br/>m3/h')
+    NPSHr = CSVField(u'NPSHr, <br/>m')
+    Q_NPSHr = CSVField(u'Q, <br/>m3/h')
+
+    Qcor = FloatField(u'Optimal Q', validators=[Optional()])
+    Hcor = FloatField(u'Optimal H', validators=[Optional()])
+    EFFcor = FloatField(u'Optimal Eff.', validators=[Optional()])
+
     H_Q_polynom_n = SelectField(
         u'H(Q) polynom power',
         choices=[(i, str(i)) for i in range(3, 9)],
         coerce=int,
         default=4,
     )
-    eff_Q_polynom_n = SelectField(
+    EFF_Q_polynom_n = SelectField(
         u'Eff.(Q) polynom power',
         choices=[(i, str(i)) for i in range(3, 9)],
         coerce=int,
         default=4,
     )
     NPSHr_Q_polynom_n = SelectField(
-        u'NPSHr(Q) polynom power',
+        u'NPSHr(Q) polynom p-r',
         choices=[(i, str(i)) for i in range(3, 9)],
         coerce=int,
         default=3,
@@ -116,3 +104,8 @@ class CharacteristicValuesForm(FlaskForm):
     )
     # `rpm_custom` is shown only if 'rpm_preset_other_option' is selected in `rpm_preset`.
     rpm_custom = IntegerField(u'Custom RPM:', validators=[Optional()])
+    ns = IntegerField(u'Resulting ns', validators=[Optional()])
+
+    def __init__(self, *args, **kwargs):
+        super(self.__class__, self).__init__(*args, **kwargs)
+        read_only(self.ns)
