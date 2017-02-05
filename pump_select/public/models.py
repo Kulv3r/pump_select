@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-from copy import copy
-
 from numpy.polynomial import polynomial as P
 
 from pump_select import data
-from pump_select.loggers import logger
+from pump_select.data import list_zip
 from pump_select.public.constants import *
 
 
@@ -30,10 +28,10 @@ class Polynom(object):
         # Convert points to chart series
         return data.list_zip(self.x_series, self.y_series)
 
-    def vals(self):
-        min_x, max_x = self.limits
-
-        x_vals = range(int(min_x), int(max_x)+1)
+    def vals(self, x_vals=None):
+        if not x_vals:
+            min_x, max_x = self.limits
+            x_vals = range(int(min_x), int(max_x)+1)
 
         y_vals = P.polyval(x_vals, self.polynom).tolist()
         y_vals_rounded = [round(i, 2) for i in y_vals]
@@ -63,7 +61,7 @@ class Polynom(object):
 
 class Pump(object):
     def __init__(self, **kwargs):
-        # values populated by the form
+        # values populated by the form LATER, not during the INIT
         self.H = kwargs.get('H')
         self.Q_H = kwargs.get('Q_H')
         self.EFF = kwargs.get('EFF')
@@ -75,7 +73,7 @@ class Pump(object):
         self.EFFcor = kwargs.get('EFFcor')
         self.H_Q_polynom_n = kwargs.get('H_Q_polynom_n')
         self.EFF_Q_polynom_n = kwargs.get('EFF_Q_polynom_n')
-        self.NPSHr_Q_polynom_n  = kwargs.get('NPSHr_Q_polynom_n')
+        self.NPSHr_Q_polynom_n = kwargs.get('NPSHr_Q_polynom_n')
         self.rpm_preset = kwargs.get('rpm_preset')
         self.rpm_custom = kwargs.get('rpm_custom')
 
@@ -106,7 +104,11 @@ class Pump(object):
 
     def polynom(self, func_name):
         """
-        :param func_name: <string> like 'H(Q)', 'EFF(Q)'
+        :param func_name: <string> like 'EFF(Q)'
+        Requires self to have these attrs:
+            self.EFF
+            self.Q_EFF
+            self.EFF_Q_polynom_n
         :return: a <Polynom> object
         """
         y_name, x_name = func_name[:-1].split('(')
@@ -141,6 +143,25 @@ class Pump(object):
             return 3.65 * self.rpm * ((self.Qbep / 3600.0)**0.5) / (self.Hbep**0.75)
 
     @property
+    def PWR(self):
+        # P2(Q) = ro * g * H(Q) * (Q / 3600) / кпд(Q) / 1000[кВт].
+        EFF_Q_polynom = self.polynom('EFF(Q)')
+        EFFs = [eff for (q, eff) in EFF_Q_polynom.vals(x_vals=self.Q_H)]
+
+        H_Q_EFF = zip(self.H, self.Q_H, EFFs)
+        powers = [WATER.ro * PHYSICS.g * H * Q/3600 / EFF / 1000
+                  for (H, Q, EFF) in H_Q_EFF]
+        return powers
+
+    @property
+    def Q_PWR(self):
+        return self.Q_H
+
+    @property
+    def PWR_Q_polynom_n(self):
+        return self.EFF_Q_polynom_n
+
+    @property
     def chart_data(self):
         return [
             {
@@ -156,6 +177,13 @@ class Pump(object):
                 'suffix': '%',
                 'valueDecimals': 1,
                 'points': self.polynom('EFF(Q)').points(),
+            },
+            {
+                'name': 'Power(Q)',
+                'data': self.polynom('PWR(Q)').vals(),
+                'suffix': 'kW',
+                'valueDecimals': 2,
+                'points': [],
             },
             {
                 'name': 'NPSHr(Q)',
