@@ -34,10 +34,10 @@ def home():
     if not bep_exists:
         flash(u'Bad input data - Best Efficiency Point could not be found.', category='danger')
     else:
-        Qcor, Hcor, EFFcor = form.Qcor.data, form.Hcor.data, form.EFFcor.data
-        if Qcor and Hcor and EFFcor:
+        correction_values = form.Qcor.data, form.Hcor.data, form.EFFcor.data
+        if all(correction_values):
             flash(u'Corrected Pump data:', category='success')
-            pump.correct(Qcor, Hcor, EFFcor)
+            pump.correct(*correction_values)
             form.populate_from_obj(pump)
 
     return render_template('public/home.html', **locals())
