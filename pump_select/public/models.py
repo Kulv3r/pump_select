@@ -30,12 +30,10 @@ class Polynom(object):
         # Convert points to chart series
         return data.list_zip(self.x_series, self.y_series)
 
-    def vals(self, steps=100):
+    def vals(self):
         min_x, max_x = self.limits
 
-        step = round((max_x - min_x) / steps, 1)
-
-        x_vals = [round(min_x + step * i, 0) for i in range(steps + 1)]
+        x_vals = range(int(min_x), int(max_x)+1)
 
         y_vals = P.polyval(x_vals, self.polynom).tolist()
         y_vals_rounded = [round(i, 2) for i in y_vals]

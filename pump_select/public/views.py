@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-from copy import copy
-
-from numpy.polynomial import polynomial as P
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, logout_user
 
 from pump_select import data
 from pump_select.extensions import login_manager
-from pump_select.loggers import logger
 from pump_select.public.constants import *
 from pump_select.public.forms import CharacteristicValuesForm
 from pump_select.public.models import Pump
