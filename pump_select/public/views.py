@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from copy import copy
+
 from numpy.polynomial import polynomial as P
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, logout_user
@@ -24,38 +26,19 @@ def home():
         if not form.validate():
             flash_errors(form)
     else:
-        # Fill the form with the default example data
-        for attr in ('H', 'Q_H', 'EFF', 'Q_EFF', 'NPSHr', 'Q_NPSHr'):
-            field = getattr(form, attr)
-            field.data = getattr(data, attr)
+        form.populate_from_obj(data)
 
     pump = Pump()
     form.populate_obj(pump)
-    pump.get_bep()
-
-    chart_data = [
-        {
-            'name': 'H(Q)',
-            'data': pump.polynom('H(Q)').vals(),
-            'suffix': 'm',
-            'valueDecimals': 0,
-            'points': pump.polynom('H(Q)').points(),
-        },
-        {
-            'name': 'Efficiency(Q)',
-            'data': pump.polynom('EFF(Q)').vals(),
-            'suffix': '%',
-            'valueDecimals': 1,
-            'points': pump.polynom('EFF(Q)').points(),
-        },
-        {
-            'name': 'NPSHr(Q)',
-            'data': pump.polynom('NPSHr(Q)').vals(),
-            'suffix': 'm',
-            'valueDecimals': 2,
-            'points': pump.polynom('NPSHr(Q)').points(),
-        },
-    ]
+    bep_exists = pump.get_bep()
+    if not bep_exists:
+        flash(u'Bad input data - Best Efficiency Point could not be found.', category='danger')
+    else:
+        Qcor, Hcor, EFFcor = form.Qcor.data, form.Hcor.data, form.EFFcor.data
+        if Qcor and Hcor and EFFcor:
+            flash(u'Corrected Pump data:', category='success')
+            pump.correct(Qcor, Hcor, EFFcor)
+            form.populate_from_obj(pump)
 
     return render_template('public/home.html', **locals())
 

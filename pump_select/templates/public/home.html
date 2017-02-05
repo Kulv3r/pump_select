@@ -11,10 +11,16 @@
             height: 220px;
             margin: 0 auto;
         }
-        .right-val-col{
+        .right-dash {
             border-right: 1px dashed #AAA;
         }
-        .left-val-col{
+        .right-no-padding {
+            padding-right: 2px;
+        }
+        .left-no-padding {
+            padding-left: 2px;
+        }
+        .charts {
             padding-left: 30px;
         }
     </style>
@@ -22,24 +28,24 @@
 {% block content %}
     <div class="body-content">
         <div class="row">
-            <div class="col-lg-6 right-val-col">
+            <div class="col-lg-6 right-dash">
                 <h2><i class="fa fa-edit"></i> Input values</h2>
                 <form class="form" method="POST" action="" role="form">
                     {{ form.csrf_token }}
                     <div class="row">
-                        <div class="col-lg-2">{{ render_field(form.Q_H) }}</div>
-                        <div class="col-lg-2 right-val-col">{{ render_field(form.H) }}</div>
-                        <div class="col-lg-2">{{ render_field(form.Q_EFF) }}</div>
-                        <div class="col-lg-2 right-val-col">{{ render_field(form.EFF) }}</div>
-                        <div class="col-lg-2">{{ render_field(form.Q_NPSHr) }}</div>
-                        <div class="col-lg-2">{{ render_field(form.NPSHr) }}</div>
+                        <div class="col-lg-2 right-no-padding">{{ render_field(form.Q_H) }}</div>
+                        <div class="col-lg-2 left-no-padding">{{ render_field(form.H) }}</div>
+                        <div class="col-lg-2 right-no-padding">{{ render_field(form.Q_EFF) }}</div>
+                        <div class="col-lg-2 left-no-padding">{{ render_field(form.EFF) }}</div>
+                        <div class="col-lg-2 right-no-padding">{{ render_field(form.Q_NPSHr) }}</div>
+                        <div class="col-lg-2 left-no-padding">{{ render_field(form.NPSHr) }}</div>
                     </div>
-{#                    <h4>Q/H/Efficiency correction point</h4>#}
-{#                    <div class="row">#}
-{#                        <div class="col-lg-4">{{ render_field(form.Qcor) }}</div>#}
-{#                        <div class="col-lg-4">{{ render_field(form.Hcor) }}</div>#}
-{#                        <div class="col-lg-4">{{ render_field(form.EFFcor) }}</div>#}
-{#                    </div>#}
+                    <h4>Q/H/Efficiency correction point</h4>
+                    <div class="row">
+                        <div class="col-lg-4">{{ render_field(form.Qcor) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.Hcor) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.EFFcor) }}</div>
+                    </div>
                     <h4>Polynom powers, adjust if nesessary</h4>
                     <div class="row">
                         <div class="col-lg-4">{{ render_field(form.H_Q_polynom_n) }}</div>
@@ -59,7 +65,7 @@
                     </div>
                 </form>
             </div>
-            <div class="col-lg-6 left-val-col">
+            <div class="col-lg-6 charts">
                 <div class="row">
                     <h2><i class="fa fa-line-chart"></i> Charts</h2>
                     <div id="container"></div>
@@ -79,14 +85,14 @@
                         <tr>
                             <td>{{ pump.Qbep|round }}</td>
                             <td>{{ pump.Hbep|round }}</td>
-                            <td>{{ pump.EFF_max|round }}</td>
+                            <td>{{ pump.EFFmax|round }}</td>
                             <td>{{ pump.ns|round }}</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div><!-- /.row -->
+        </div>
     </div>
 {% endblock %}
 
@@ -160,7 +166,7 @@
                 }
             }
 
-            var chart_data = {{ chart_data|safe }};
+            var chart_data = {{ pump.chart_data|safe }};
 
             $.each(chart_data, function (i, dataset) {
                 $('<div class="chart">')

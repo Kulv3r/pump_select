@@ -109,3 +109,9 @@ class CharacteristicValuesForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         read_only(self.ns)
+
+    def populate_from_obj(self, obj):
+        # Fill the form with the data from object, for example default data, or corrected pump data.
+        for attr in ('H', 'Q_H', 'EFF', 'Q_EFF', 'NPSHr', 'Q_NPSHr'):
+            field = getattr(self, attr)
+            field.data = [round(i, 2) for i in getattr(obj, attr)]

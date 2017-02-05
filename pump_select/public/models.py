@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from copy import copy
+
 from numpy.polynomial import polynomial as P
 
 from pump_select import data
@@ -63,22 +65,38 @@ class Polynom(object):
 
 class Pump(object):
     def __init__(self, **kwargs):
-        attrs = (
-            # values populated by the form
-            'H', 'Q_H',
-            'EFF', 'Q_EFF',
-            'NPSHr', 'Q_NPSHr',
-            'Qcor', 'Hcor', 'EFFcor',
-            'H_Q_polynom_n',
-            'EFF_Q_polynom_n',
-            'NPSHr_Q_polynom_n ',
-            'rpm_preset', 'rpm_custom',
+        # values populated by the form
+        self.H = kwargs.get('H')
+        self.Q_H = kwargs.get('Q_H')
+        self.EFF = kwargs.get('EFF')
+        self.Q_EFF = kwargs.get('Q_EFF')
+        self.NPSHr = kwargs.get('NPSHr')
+        self.Q_NPSHr = kwargs.get('Q_NPSHr')
+        self.Qcor = kwargs.get('Qcor')
+        self.Hcor = kwargs.get('Hcor')
+        self.EFFcor = kwargs.get('EFFcor')
+        self.H_Q_polynom_n = kwargs.get('H_Q_polynom_n')
+        self.EFF_Q_polynom_n = kwargs.get('EFF_Q_polynom_n')
+        self.NPSHr_Q_polynom_n  = kwargs.get('NPSHr_Q_polynom_n')
+        self.rpm_preset = kwargs.get('rpm_preset')
+        self.rpm_custom = kwargs.get('rpm_custom')
 
-            'EFF_max', 'Qbep', 'Hbep'
-        )
-        for attr in attrs:
-            val = kwargs.get(attr, None)
-            setattr(self, attr, val)
+        self.EFFmax = None
+        self.Qbep = None
+        self.Hbepself = None
+
+    def correct(self, Qcor, Hcor, EFFcor):
+        correcting_coef = Hcor / self.Hbep
+        self.H = [val*correcting_coef for val in self.H]
+
+        correcting_coef = EFFcor / self.EFFmax
+        self.EFF = [val*correcting_coef for val in self.EFF]
+
+        correcting_coef = Qcor / self.Qbep
+        self.Q_H = [val*correcting_coef for val in self.Q_H]
+        self.Q_EFF = [val*correcting_coef for val in self.Q_EFF]
+
+        self.get_bep()
 
     @property
     def limits(self):
@@ -110,8 +128,9 @@ class Pump(object):
         if not bep:
             return
 
-        self.EFF_max, self.Qbep = bep
+        self.EFFmax, self.Qbep = bep
         self.Hbep = P.polyval(self.Qbep, H_Q_polynom.polynom)
+
         return True
 
     @property
@@ -120,4 +139,31 @@ class Pump(object):
 
     @property
     def ns(self):
-        return 3.65 * rpm * ((self.Qbep / 3600.0)**0.5) / (self.Hbep**0.75)
+        if self.Qbep and self.Hbep:
+            return 3.65 * self.rpm * ((self.Qbep / 3600.0)**0.5) / (self.Hbep**0.75)
+
+    @property
+    def chart_data(self):
+        return [
+            {
+                'name': 'H(Q)',
+                'data': self.polynom('H(Q)').vals(),
+                'suffix': 'm',
+                'valueDecimals': 0,
+                'points': self.polynom('H(Q)').points(),
+            },
+            {
+                'name': 'Efficiency(Q)',
+                'data': self.polynom('EFF(Q)').vals(),
+                'suffix': '%',
+                'valueDecimals': 1,
+                'points': self.polynom('EFF(Q)').points(),
+            },
+            {
+                'name': 'NPSHr(Q)',
+                'data': self.polynom('NPSHr(Q)').vals(),
+                'suffix': 'm',
+                'valueDecimals': 2,
+                'points': self.polynom('NPSHr(Q)').points(),
+            },
+        ]
