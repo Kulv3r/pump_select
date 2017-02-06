@@ -149,7 +149,7 @@ class Pump(object):
         EFFs = [eff for (q, eff) in EFF_Q_polynom.vals(x_vals=self.Q_H)]
 
         H_Q_EFF = zip(self.H, self.Q_H, EFFs)
-        powers = [WATER.ro * PHYSICS.g * H * (Q/3600) / (EFF*100) / 1000
+        powers = [WATER.ro * PHYSICS.g * H * (Q/3600) / (EFF/100) / 1000
                   for (H, Q, EFF) in H_Q_EFF]
         return powers
 
