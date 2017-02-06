@@ -73,6 +73,7 @@ class Pump(object):
         self.EFFcor = kwargs.get('EFFcor')
         self.H_Q_polynom_n = kwargs.get('H_Q_polynom_n')
         self.EFF_Q_polynom_n = kwargs.get('EFF_Q_polynom_n')
+        self.PWR_Q_polynom_n = kwargs.get('PWR_Q_polynom_n')
         self.NPSHr_Q_polynom_n = kwargs.get('NPSHr_Q_polynom_n')
         self.rpm_preset = kwargs.get('rpm_preset')
         self.rpm_custom = kwargs.get('rpm_custom')
@@ -156,10 +157,6 @@ class Pump(object):
     @property
     def Q_PWR(self):
         return self.Q_H
-
-    @property
-    def PWR_Q_polynom_n(self):
-        return self.EFF_Q_polynom_n
 
     @property
     def chart_data(self):

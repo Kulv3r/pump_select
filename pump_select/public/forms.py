@@ -78,19 +78,25 @@ class CharacteristicValuesForm(FlaskForm):
     EFFcor = FloatField(u'Optimal Eff.', validators=[Optional()])
 
     H_Q_polynom_n = SelectField(
-        u'H(Q) polynom power',
+        u'H(Q)',
         choices=[(i, str(i)) for i in range(3, 9)],
         coerce=int,
         default=4,
     )
     EFF_Q_polynom_n = SelectField(
-        u'Eff.(Q) polynom power',
+        u'Eff.(Q)',
+        choices=[(i, str(i)) for i in range(3, 9)],
+        coerce=int,
+        default=4,
+    )
+    PWR_Q_polynom_n = SelectField(
+        u'Power(Q)',
         choices=[(i, str(i)) for i in range(3, 9)],
         coerce=int,
         default=4,
     )
     NPSHr_Q_polynom_n = SelectField(
-        u'NPSHr(Q) polynom p-r',
+        u'NPSHr(Q)',
         choices=[(i, str(i)) for i in range(3, 9)],
         coerce=int,
         default=3,
