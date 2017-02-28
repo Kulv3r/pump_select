@@ -79,8 +79,10 @@ class Pump(object):
         self.rpm_custom = kwargs.get('rpm_custom')
 
         self.EFFmax = None
-        self.Qbep = None
         self.Hbepself = None
+        self.Qbep = None
+        self._Qmin = kwargs.get('Qmin')
+        self._Qmax = kwargs.get('Qmax')
 
     def correct(self, Qcor, Hcor, EFFcor):
         correcting_coef = Hcor / self.Hbep
@@ -179,7 +181,7 @@ class Pump(object):
                 'name': 'Power(Q)',
                 'data': self.polynom('PWR(Q)').vals(),
                 'suffix': 'kW',
-                'valueDecimals': 2,
+                'valueDecimals': 0,
                 'points': [],
             },
             {
@@ -190,3 +192,21 @@ class Pump(object):
                 'points': self.polynom('NPSHr(Q)').points(),
             },
         ]
+
+    @property
+    def Qmin(self):
+        """ Qmin (application range) = 0.7 Qbep """
+        return self._Qmin or int(self.Qbep * 0.7)
+
+    @Qmin.setter
+    def Qmin(self, value):
+        self._Qmin = value
+
+    @property
+    def Qmax(self):
+        """ Qmax (application range) = 1.25 Qbep """
+        return self._Qmax or int(self.Qbep * 1.25)
+
+    @Qmax.setter
+    def Qmax(self, value):
+        self._Qmax = value

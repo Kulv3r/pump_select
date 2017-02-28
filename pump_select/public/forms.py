@@ -66,6 +66,7 @@ class CSVField(StringField):
 
 
 class CharacteristicValuesForm(FlaskForm):
+    # Input values
     H = CSVField(u'H, <br/>m')
     Q_H = CSVField(u'Q, <br/>m3/h')
     EFF = CSVField(u'Efficiency, <br/>%')
@@ -73,10 +74,12 @@ class CharacteristicValuesForm(FlaskForm):
     NPSHr = CSVField(u'NPSHr, <br/>m')
     Q_NPSHr = CSVField(u'Q, <br/>m3/h')
 
+    # Q/H/Efficiency correction point
     Qcor = FloatField(u'Optimal Q', validators=[Optional()])
     Hcor = FloatField(u'Optimal H', validators=[Optional()])
     EFFcor = FloatField(u'Optimal Eff.', validators=[Optional()])
 
+    # Polynom powers
     H_Q_polynom_n = SelectField(
         u'H(Q)',
         choices=[(i, str(i)) for i in range(3, 9)],
@@ -101,6 +104,8 @@ class CharacteristicValuesForm(FlaskForm):
         coerce=int,
         default=3,
     )
+
+    # Engine Revolutions per minute
     rpm_preset_other_option = 0, u'other...'
     rpm_preset = SelectField(
         u'RPM',
@@ -110,14 +115,16 @@ class CharacteristicValuesForm(FlaskForm):
     )
     # `rpm_custom` is shown only if 'rpm_preset_other_option' is selected in `rpm_preset`.
     rpm_custom = IntegerField(u'Custom RPM:', validators=[Optional()])
-    ns = IntegerField(u'Resulting ns', validators=[Optional()])
 
-    def __init__(self, *args, **kwargs):
-        super(self.__class__, self).__init__(*args, **kwargs)
-        read_only(self.ns)
+    # Q application range
+    Qmin = IntegerField(u'Q min, m3', validators=[Optional()])
+    Qmax = IntegerField(u'Q max, m3', validators=[Optional()])
 
     def populate_from_obj(self, obj):
         # Fill the form with the data from object, for example default data, or corrected pump data.
         for attr in ('H', 'Q_H', 'EFF', 'Q_EFF', 'NPSHr', 'Q_NPSHr'):
             field = getattr(self, attr)
             field.data = [round(i, 2) for i in getattr(obj, attr)]
+
+        # self._Qmin.data = obj.Qmin
+        # self._Qmax.data = obj.Qmax

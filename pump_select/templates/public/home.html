@@ -57,7 +57,11 @@
                     <div class="row">
                         <div class="col-lg-4">{{ render_field(form.rpm_preset) }}</div>
                         <div class="col-lg-4">{{ render_field(form.rpm_custom) }}</div>
-{#                        <div class="col-lg-4">{{ render_field(form.ns) }}</div>#}
+                    </div>
+                    <h4>Q application range</h4>
+                    <div class="row">
+                        <div class="col-lg-4">{{ render_field(form.Qmin) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.Qmax) }}</div>
                     </div>
                     <div class="row">
                         <div class="col-lg-2">
@@ -197,7 +201,13 @@
                         },
                         labels: {
                             format: '{value} m3/h'
-                        }
+                        },
+                        // highlight the working area
+                        plotBands: [{
+                            from: {{ pump.Qmin }},
+                            to: {{ pump.Qmax }},
+                            color: 'rgba(68, 213, 170, 0.1)'
+                        }]
                     },
                     yAxis: {
                         title: {
