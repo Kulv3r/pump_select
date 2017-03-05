@@ -80,6 +80,11 @@
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    <script>
+        // Python bools compatibility
+        var True = true,
+            False = false;
+    </script>
 {% endassets %}
 {% block js %}{% endblock %}
 {% endblock %}

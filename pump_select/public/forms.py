@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, HiddenField, FloatField
+from wtforms import StringField, SelectField, FloatField
 from wtforms.fields.html5 import IntegerField
 from wtforms.validators import Optional
 from wtforms.widgets import TextArea
-from wtforms_components import read_only
 
 from pump_select.public.constants import RPM
 
@@ -71,6 +70,8 @@ class CharacteristicValuesForm(FlaskForm):
     Q_H = CSVField(u'Q, <br/>m3/h')
     EFF = CSVField(u'Efficiency, <br/>%')
     Q_EFF = CSVField(u'Q, <br/>m3/h')
+    PWR = CSVField(u'Power, <br/>kW')
+    Q_PWR = CSVField(u'Q, <br/>m3/h')
     NPSHr = CSVField(u'NPSHr, <br/>m')
     Q_NPSHr = CSVField(u'Q, <br/>m3/h')
 

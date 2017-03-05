@@ -2,7 +2,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, logout_user
 
-from pump_select import data
+from pump_select import example_data
 from pump_select.extensions import login_manager
 from pump_select.public.constants import *
 from pump_select.public.forms import CharacteristicValuesForm
@@ -22,13 +22,15 @@ def home():
         if not form.validate():
             flash_errors(form)
     else:
-        form.populate_from_obj(data)
+        form.populate_from_obj(example_data)
 
     pump = Pump()
     form.populate_obj(pump)
+    pump.calculate_missing()
+
     bep_exists = pump.get_bep()
     if not bep_exists:
-        flash(u'Bad input data - Best Efficiency Point could not be found.', category='danger')
+        flash('Bad input data - Best Efficiency Point could not be found.', category='danger')
     else:
         correction_values = form.Qcor.data, form.Hcor.data, form.EFFcor.data
         if all(correction_values):

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from pprint import pprint
+
 from numpy.polynomial import polynomial as P
 
-from pump_select import data
-from pump_select.data import list_zip
+from pump_select.example_data import list_zip
 from pump_select.public.constants import *
 
 
@@ -26,7 +27,7 @@ class Polynom(object):
 
     def points(self):
         # Convert points to chart series
-        return data.list_zip(self.x_series, self.y_series)
+        return list_zip(self.x_series, self.y_series)
 
     def vals(self, x_vals=None):
         if not x_vals:
@@ -66,11 +67,15 @@ class Pump(object):
         self.Q_H = kwargs.get('Q_H')
         self.EFF = kwargs.get('EFF')
         self.Q_EFF = kwargs.get('Q_EFF')
+        self.PWR = kwargs.get('PWR')
+        self.Q_PWR = kwargs.get('Q_PWR')
+        self.is_EFF_set = None
         self.NPSHr = kwargs.get('NPSHr')
         self.Q_NPSHr = kwargs.get('Q_NPSHr')
         self.Qcor = kwargs.get('Qcor')
         self.Hcor = kwargs.get('Hcor')
         self.EFFcor = kwargs.get('EFFcor')
+        self.PWRcor = kwargs.get('PWRcor')
         self.H_Q_polynom_n = kwargs.get('H_Q_polynom_n')
         self.EFF_Q_polynom_n = kwargs.get('EFF_Q_polynom_n')
         self.PWR_Q_polynom_n = kwargs.get('PWR_Q_polynom_n')
@@ -79,10 +84,43 @@ class Pump(object):
         self.rpm_custom = kwargs.get('rpm_custom')
 
         self.EFFmax = None
+        self.PWRbep = None
         self.Hbepself = None
         self.Qbep = None
         self._Qmin = kwargs.get('Qmin')
         self._Qmax = kwargs.get('Qmax')
+
+    def calculate_missing(self):
+        if self.EFF and not self.PWR:
+            self.is_EFF_set = True
+            self.PWR = self.get_PWR()
+            self.Q_PWR = self.Q_H
+        elif self.PWR and not self.EFF:
+            self.is_EFF_set = False
+            self.EFF = self.get_EFF()
+            self.Q_EFF = self.Q_H
+        else:
+            raise Exception('Either PWR or EFF should be defined.')
+
+    def get_PWR(self):
+        # P2(Q) = ro * g * H(Q) * (Q / 3600) / (кпд(Q) * 100%) / 1000 [кВт].
+        EFF_Q_polynom = self.polynom('EFF(Q)')
+        EFFs = [eff for (q, eff) in EFF_Q_polynom.vals(x_vals=self.Q_H)]
+
+        H_Q_EFF = zip(self.H, self.Q_H, EFFs)
+        powers = [WATER.ro * PHYSICS.g * H * (Q / 3600) / (EFF / 100) / 1000
+                  for (H, Q, EFF) in H_Q_EFF]
+        return powers
+
+    def get_EFF(self):
+        # EFF(Q) = ro * g * H(Q) * (Q / 3600) / P(Q) / 1000 * 100%
+        PWR_Q_polynom = self.polynom('PWR(Q)')
+        PWRs = [pwr for (q, pwr) in PWR_Q_polynom.vals(x_vals=self.Q_H)]
+
+        H_Q_PWR = zip(self.H, self.Q_H, PWRs)
+        effs = [WATER.ro * PHYSICS.g * H * (Q / 3600) / PWR / 1000 * 100
+                for (H, Q, PWR) in H_Q_PWR]
+        return effs
 
     def correct(self, Qcor, Hcor, EFFcor):
         correcting_coef = Hcor / self.Hbep
@@ -100,9 +138,9 @@ class Pump(object):
     @property
     def limits(self):
         # Get calculating limits of Q
-        series = self.Q_H, self.Q_EFF, self.Q_NPSHr
-        limit_from = min([i[0] for i in series])
-        limit_to = max(i[-1] for i in series)
+        series = self.Q_H, self.Q_EFF, self.Q_PWR, self.Q_NPSHr
+        limit_from = min([i[0] for i in series if i])
+        limit_to = max(i[-1] for i in series if i)
         return limit_from, limit_to
 
     def polynom(self, func_name):
@@ -124,17 +162,15 @@ class Pump(object):
 
     def get_bep(self):
         # Get max efficiency ("bep" - best efficiency point)
-        EFF_Q_polynom = self.polynom('EFF(Q)')
-        H_Q_polynom = self.polynom('H(Q)')
-
-        bep = EFF_Q_polynom.max_val(self.limits)
+        bep = self.polynom('EFF(Q)').max_val(self.limits)
         if not bep:
-            return
+            return  # i.e. bad data and bep cant be found
 
         self.EFFmax, self.Qbep = bep
-        self.Hbep = P.polyval(self.Qbep, H_Q_polynom.polynom)
+        self.Hbep = P.polyval(self.Qbep, self.polynom('H(Q)').polynom)
+        self.PWRbep = P.polyval(self.Qbep, self.polynom('PWR(Q)').polynom)
 
-        return True
+        return True  # i.e. bep found succesfully
 
     @property
     def rpm(self):
@@ -146,23 +182,8 @@ class Pump(object):
             return 3.65 * self.rpm * ((self.Qbep / 3600.0)**0.5) / (self.Hbep**0.75)
 
     @property
-    def PWR(self):
-        # P2(Q) = ro * g * H(Q) * (Q / 3600) / (кпд(Q) * 100%) / 1000 [кВт].
-        EFF_Q_polynom = self.polynom('EFF(Q)')
-        EFFs = [eff for (q, eff) in EFF_Q_polynom.vals(x_vals=self.Q_H)]
-
-        H_Q_EFF = zip(self.H, self.Q_H, EFFs)
-        powers = [WATER.ro * PHYSICS.g * H * (Q/3600) / (EFF/100) / 1000
-                  for (H, Q, EFF) in H_Q_EFF]
-        return powers
-
-    @property
-    def Q_PWR(self):
-        return self.Q_H
-
-    @property
     def chart_data(self):
-        return [
+        all_charts = [
             {
                 'name': 'H(Q)',
                 'data': self.polynom('H(Q)').vals(),
@@ -175,14 +196,14 @@ class Pump(object):
                 'data': self.polynom('EFF(Q)').vals(),
                 'suffix': '%',
                 'valueDecimals': 1,
-                'points': self.polynom('EFF(Q)').points(),
+                'points': self.polynom('EFF(Q)').points() if self.is_EFF_set else [],
             },
             {
                 'name': 'Power(Q)',
                 'data': self.polynom('PWR(Q)').vals(),
                 'suffix': 'kW',
-                'valueDecimals': 0,
-                'points': [],
+                'valueDecimals': 1,
+                'points': self.polynom('PWR(Q)').points() if not self.is_EFF_set else [],
             },
             {
                 'name': 'NPSHr(Q)',
@@ -192,6 +213,7 @@ class Pump(object):
                 'points': self.polynom('NPSHr(Q)').points(),
             },
         ]
+        return all_charts
 
     @property
     def Qmin(self):
