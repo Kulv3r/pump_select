@@ -102,6 +102,11 @@ class Pump(object):
         else:
             raise Exception('Either PWR or EFF should be defined.')
 
+        # Add zero efficiency point
+        if self.EFF[0] != 0:
+            self.EFF.insert(0, 0)
+            self.Q_EFF.insert(0, 0)
+
     def get_PWR(self):
         # P2(Q) = ro * g * H(Q) * (Q / 3600) / (кпд(Q) * 100%) / 1000 [кВт].
         EFF_Q_polynom = self.polynom('EFF(Q)')
