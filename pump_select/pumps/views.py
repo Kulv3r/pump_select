@@ -4,11 +4,11 @@ from flask_login import login_required, logout_user
 
 from pump_select import example_data
 from pump_select.extensions import login_manager
-from pump_select.public.constants import *
-from pump_select.public.forms import CharacteristicValuesForm
-from pump_select.public.models import Pump
-from pump_select.user.forms import RegisterForm
-from pump_select.user.models import User
+from pump_select.pumps.constants import *
+from pump_select.pumps.forms import CharacteristicValuesForm
+from pump_select.pumps.models import Pump
+from pump_select.users.forms import RegisterForm
+from pump_select.users.models import User
 from pump_select.utils import flash_errors
 
 blueprint = Blueprint('public', __name__, static_folder='../static')

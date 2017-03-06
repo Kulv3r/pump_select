@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Test forms."""
 
-from pump_select.public.forms import LoginForm
-from pump_select.user.forms import RegisterForm
+from pump_select.pumps.forms import LoginForm
+from pump_select.users.forms import RegisterForm
 
 
 class TestRegisterForm:

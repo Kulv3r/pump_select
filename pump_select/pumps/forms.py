@@ -5,7 +5,7 @@ from wtforms.fields.html5 import IntegerField
 from wtforms.validators import Optional
 from wtforms.widgets import TextArea
 
-from pump_select.public.constants import RPM
+from pump_select.pumps.constants import RPM
 
 
 class CSVField(StringField):

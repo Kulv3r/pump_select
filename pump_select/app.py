@@ -2,7 +2,7 @@
 """The app module, containing the app factory function."""
 from flask import Flask, render_template
 
-from pump_select import commands, public, user
+from pump_select import commands, pumps, users, manufacturers
 from pump_select.assets import assets
 from pump_select.extensions import bcrypt, cache, csrf_protect, db, debug_toolbar, login_manager, migrate
 from pump_select.settings import ProdConfig
@@ -38,8 +38,10 @@ def register_extensions(app):
 
 def register_blueprints(app):
     """Register Flask blueprints."""
-    app.register_blueprint(public.views.blueprint)
-    app.register_blueprint(user.views.blueprint)
+    app.register_blueprint(manufacturers.views.blueprint)
+    # app.register_blueprint(motors.views.blueprint)
+    app.register_blueprint(pumps.views.blueprint)
+    app.register_blueprint(users.views.blueprint)
     return None
 
 
@@ -61,7 +63,7 @@ def register_shellcontext(app):
         """Shell context objects."""
         return {
             'db': db,
-            'User': user.models.User,
+            'User': users.models.User,
         }
 
     app.shell_context_processor(shell_context)

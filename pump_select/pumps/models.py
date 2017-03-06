@@ -4,7 +4,7 @@ from pprint import pprint
 from numpy.polynomial import polynomial as P
 
 from pump_select.example_data import list_zip
-from pump_select.public.constants import *
+from pump_select.pumps.constants import *
 
 
 class Polynom(object):
