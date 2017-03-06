@@ -55,15 +55,20 @@ class Constant(object):
     }
     """
     @classmethod
+    def default_repr(cls):
+        return dict([(i, str(i)) for i in cls.ALL])
+
+    @classmethod
     def choice(cls, code):
         return Choice(code, cls.repr[code])
 
     @classproperty
-    def ALL_(cls):
+    def ALL(cls):
         uppercase_attrs = [i for i in cls.__dict__.keys() if i.isupper()]
         unsorted_attrs = [getattr(cls, i) for i in uppercase_attrs]
         return sorted(unsorted_attrs)
 
     @classproperty
     def ALL_AS_OPTIONS(cls):
-        return [(i, cls.repr[i]) for i in cls.ALL_]
+        repr = getattr(cls, 'repr', cls.default_repr())
+        return [(i, repr[i]) for i in cls.ALL]

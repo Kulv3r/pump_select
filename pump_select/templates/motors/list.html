@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ manufacturer_type|title }} Motors</h1>
+    <a class="btn btn-primary" href="{{ url_for('.edit') }}">Add</a>
+<table class="table">
+    <thead>
+    <tr>
+        <td>id</td>
+        <td>Name</td>
+        <td>Manufacturer</td>
+        <td>Power</td>
+        <td>Voltage</td>
+        <td>Current frequency</td>
+        <td>RPM</td>
+        <td>Body Protection</td>
+        <td>Explosion protected</td>
+        <td>Mass</td>
+        <td></td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for m in motors %}
+        <tr>
+            <td>{{ m.id }}</td>
+            <td>{{ m.name }}</td>
+            <td>{{ m.manufacturer.name }}</td>
+            <td>{{ m.power }} kW</td>
+            <td>{{ m.voltage }} V</td>
+            <td>{{ m.current_frequency }} Hz</td>
+            <td>{{ m.rpm }} rev/min</td>
+            <td>{{ m.ip_protection or '-' }}</td>
+            <td>{{ '+' if m.explosion_protected else '-' }}</td>
+            <td>{{ m.mass }} kg</td>
+            <td>
+                <a class="btn btn-primary" href="{{ url_for('.edit', motor_id=m.id) }}">edit</a>
+                <a class="btn btn-danger" href="{{ url_for('.delete', motor_id=m.id) }}">
+                    {% if m.deleted_at %}restore{% else %}delete{% endif %}
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
+
