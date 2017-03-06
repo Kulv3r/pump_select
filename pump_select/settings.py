@@ -44,4 +44,4 @@ class TestConfig(ProdConfig):
     WTF_CSRF_ENABLED = False  # Allows form testing
 
 
-config = DevConfig if os.environ.get('FLASK_DEBUG') == '1' else ProdConfig
+config = DevConfig if os.environ.get('PUMP_SELECT_ENV') == 'dev' else ProdConfig
