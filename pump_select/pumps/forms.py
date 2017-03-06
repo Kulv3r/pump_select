@@ -1,11 +1,44 @@
 # -*- coding: utf-8 -*-
 from flask_wtf import FlaskForm
-from wtforms import SelectField, FloatField
+from wtforms import SelectField, FloatField, StringField, BooleanField
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.fields.html5 import IntegerField
-from wtforms.validators import Optional
+from wtforms.validators import Optional, InputRequired
 
 from pump_select.general.constants import RPM
+from pump_select.manufacturers.models import PumpManufacturer
+from pump_select.pumps.constants import PumpCategory, SealTypes
 from pump_select.pumps.fields import CSVField
+
+
+class PumpForm(FlaskForm):
+    manufacturer = QuerySelectField(
+        query_factory=lambda: (
+            PumpManufacturer.query
+            .filter(PumpManufacturer.deleted_at.is_(None))
+            .order_by(PumpManufacturer.name.asc())
+        ),
+        get_label=lambda m: m.name,
+    )
+    category = SelectField(
+        choices=PumpCategory.ALL_AS_OPTIONS,
+        coerce=int,
+    )
+    name = StringField('Series title', validators=[InputRequired()])
+    size_type = StringField('Dimension-type', validators=[InputRequired()])
+    inbound_diameter = FloatField()
+    inbound_pressure = FloatField()
+    outbound_diameter = FloatField()
+    outbound_pressure = FloatField()
+    seal_type = SelectField(
+        choices=SealTypes.ALL_AS_OPTIONS,
+        coerce=int,
+    )
+    mass = IntegerField()
+    max_pressure = FloatField()
+    frequency_regulation_needed = BooleanField()
+    fluid_temp_min = IntegerField()
+    fluid_temp_max = IntegerField()
 
 
 class CharacteristicValuesForm(FlaskForm):
