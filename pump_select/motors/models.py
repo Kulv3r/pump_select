@@ -14,6 +14,7 @@ class Motor(Timestamps, SurrogatePK, Model):
     rpm = Column(db.Integer())
     _ip_protection = Column(db.String(2))
     explosion_protected = Column(db.Boolean())
+    frequency_regulation = Column(db.Boolean())
     mass = Column(db.Integer())
 
     @property

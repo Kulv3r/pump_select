@@ -1,5 +1,5 @@
 ===============================
-Pump Select
+PumpCharacteristic Select
 ===============================
 
 An app to help you select a better pump for your demands.

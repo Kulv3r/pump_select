@@ -17,7 +17,7 @@ class PumpCategory(Constant):
     # Between-bearings pumps
     ## Axial split
     BB1 = 10  # Double entry, Axially Split Casing pump, One stage
-    BBC = 11  # Two Stage, Axially Split Pump
+    BBC = 11  # Two Stage, Axially Split PumpCharacteristic
     ## Multi-stage
     BB4 = 12  # Between bearings multi-stage radially split pump
     BBV = 13  # vertical multistage centrifugal in-line pumps
@@ -36,13 +36,25 @@ class PumpCategory(Constant):
     }
 
 
-class SealTypes(Constant):
-    GLAND = 1  # gland seal
-    MECHANICAL = 2  # Mechanical seal
-    DOUBLE = 3  # Double mechanical seal
+class SealType(Constant):
+    GLAND = 1
+    MECHANICAL = 2
+    DOUBLE = 3
 
     repr = {
         GLAND: 'Gland seal',
         MECHANICAL: 'Mechanical seal',
         DOUBLE: 'Double Mechanical seal',
+    }
+
+
+class Material(Constant):
+    STEEL = 1
+    CAST_IRON = 2
+    BRONZE = 3
+
+    repr = {
+        STEEL: 'Steel',
+        CAST_IRON: 'Cast Iron',
+        BRONZE: 'Bronze',
     }

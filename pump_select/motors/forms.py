@@ -19,21 +19,22 @@ class MotorForm(FlaskForm):
         get_label=lambda m: m.name,
     )
     name = StringField('Name', validators=[InputRequired()])
+    frequency_regulation = BooleanField('Frequency regulation?')
     power = FloatField('Power, kW', validators=[InputRequired()])
     voltage = IntegerField('Voltage, V', validators=[InputRequired()])
     current_frequency = SelectField(
         'Current frequency, Hz',
-        choices=CurrentFrequencies.ALL_AS_OPTIONS,
+        choices=CurrentFrequencies.OPTIONS,
         coerce=int,
     )
     rpm = SelectField(
         'RPM',
-        choices=RPM.ALL_AS_OPTIONS,
+        choices=RPM.OPTIONS,
         coerce=int,
     )
     _ip_protection = StringField(
-        'Body protection, "IP-??"',
+        'Degree of protection, "IP-??"',
         validators=[(Regexp('[1-9][1-9]')), Optional()],
     )
     explosion_protected = BooleanField('Protected from explosion?')
-    mass = IntegerField('Mass, kg', validators=[InputRequired()])
+    mass = IntegerField('Weight, kg', validators=[InputRequired()])

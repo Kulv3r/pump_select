@@ -38,37 +38,70 @@ def constants_dict(constants_module):
     return dict([(i.__name__, i) for i in shared_constants if hasattr(i, '__name__')])
 
 
+class classproperty(object):
+    def __init__(self, f):
+        self.f = f
+
+    def __get__(self, obj, owner):
+        return self.f(owner)
+
+
 class Constant(object):
     """
     Base class for constants.
     Supposed you have several constants, which defined like this:
 
-    RED = 1  <-- a code, that will be saved to DB
-    GREEN = 2
-    BLUE = 3
+    FREELANCER = 1  <-- a code, that will be saved to DB
+    AGENCY = 2
+    GROUP = 3
+    COMPANY = 4
 
     And a user-friendly representation as a dict:
-    repr = {
-        RED: u'Red color',
-        GREEN: u'Good color',
-        BLUE: u'Blue dabudee dabudaay',
+    labels = {
+        FREELANCER: 'Freelancer',
+        AGENCY: 'Agency',
+        GROUP: 'Group',
+        COMPANY: 'Company',
     }
-    """
-    @classmethod
-    def default_repr(cls):
-        return dict([(i, str(i)) for i in cls.ALL])
 
-    @classmethod
-    def choice(cls, code):
-        return Choice(code, cls.repr[code])
+    To use this constant as a choice field, define a DB field like this:
+        my_field = Column(ChoiceType(choices=MyConstantsClass.ALL_AS_OPTIONS, impl=db.Integer()))
+    """
+    labels = {}
+
+    _all = None
+    _all_as_options = None
 
     @classproperty
     def ALL(cls):
-        uppercase_attrs = [i for i in cls.__dict__.keys() if i.isupper()]
-        unsorted_attrs = [getattr(cls, i) for i in uppercase_attrs]
-        return sorted(unsorted_attrs)
+        """
+        :return: A list of ALL constants in this class,
+        i.e. [1, 2, 3, 4].
+        Uppercase attrs only.
+        Redefine it, if you need a custom order.
+        """
+        if not cls._all:
+            cls._all = [value for name, value in cls.__dict__.items()
+                        if name.isupper() and not name.startswith(('ALL', 'OPTIONS'))]
+        return cls._all
 
     @classproperty
-    def ALL_AS_OPTIONS(cls):
-        repr = getattr(cls, 'repr', cls.default_repr())
-        return [(i, repr[i]) for i in cls.ALL]
+    def OPTIONS(cls):
+        """
+        :return: A list of 2-tuples options, 
+        i.e. [
+            (1, 'Freelancer'),
+            (2, 'Agency'),
+            (3, 'Group'),
+            (4, 'Company'),
+        ]
+        Needs a "cls.labels" dict with labels to be defined.
+        """
+        if not cls._all_as_options:
+            cls._all_as_options = [(i, cls.labels.get(i, i)) for i in cls.ALL]
+        return cls._all_as_options
+
+    @classmethod
+    def choice(cls, code):
+        """ Get a <Choice> instance from its code. """
+        return Choice(code, cls.labels[code])

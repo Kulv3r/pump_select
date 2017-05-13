@@ -7,7 +7,7 @@ from wtforms.validators import Optional, InputRequired
 
 from pump_select.general.constants import RPM
 from pump_select.manufacturers.models import PumpManufacturer
-from pump_select.pumps.constants import PumpCategory, SealTypes
+from pump_select.pumps.constants import PumpCategory, SealType, Material
 from pump_select.pumps.fields import CSVField
 
 
@@ -21,7 +21,7 @@ class PumpForm(FlaskForm):
         get_label=lambda m: m.name,
     )
     category = SelectField(
-        choices=PumpCategory.ALL_AS_OPTIONS,
+        choices=PumpCategory.OPTIONS,
         coerce=int,
     )
     name = StringField('Series title', validators=[InputRequired()])
@@ -31,14 +31,17 @@ class PumpForm(FlaskForm):
     outbound_diameter = FloatField()
     outbound_pressure = FloatField()
     seal_type = SelectField(
-        choices=SealTypes.ALL_AS_OPTIONS,
+        choices=SealType.OPTIONS,
         coerce=int,
     )
-    mass = IntegerField()
-    max_pressure = FloatField()
+    mass = IntegerField('Weight, kg')
+    material_body = SelectField(choices=Material.OPTIONS)
+    material_wheel = SelectField(choices=Material.OPTIONS)
+    material_shaft = SelectField(choices=Material.OPTIONS)
+    max_pressure = FloatField('Max Pressure, bar (MPa)')
     frequency_regulation_needed = BooleanField()
-    fluid_temp_min = IntegerField()
-    fluid_temp_max = IntegerField()
+    fluid_temp_min = IntegerField('Fluid Min Temperature, °С')
+    fluid_temp_max = IntegerField('Fluid Max Temperature, °С')
 
 
 class CharacteristicValuesForm(FlaskForm):
@@ -87,7 +90,7 @@ class CharacteristicValuesForm(FlaskForm):
     rpm_preset_other_option = 0, u'other...'
     rpm_preset = SelectField(
         u'RPM',
-        choices=RPM.ALL_AS_OPTIONS + [rpm_preset_other_option],
+        choices=RPM.OPTIONS + [rpm_preset_other_option],
         coerce=int,
         default=RPM.RPM_1500,
     )
@@ -97,6 +100,10 @@ class CharacteristicValuesForm(FlaskForm):
     # Q application range
     Qmin = IntegerField(u'Q min, m3', validators=[Optional()])
     Qmax = IntegerField(u'Q max, m3', validators=[Optional()])
+
+    def populate_obj(self, obj):
+        super(CharacteristicValuesForm, self).populate_obj(obj)
+        obj.rpm = self.rpm_preset.data or self.rpm_custom.data
 
     def populate_from_obj(self, obj):
         # Fill the form with the data from object, for example default data, or corrected pump data.

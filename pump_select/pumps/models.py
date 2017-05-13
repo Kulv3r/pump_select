@@ -2,65 +2,60 @@
 from pprint import pprint
 
 from numpy.polynomial import polynomial as P
+from sqlalchemy.dialects import postgresql
+from sqlalchemy_utils import ChoiceType
 
+from pump_select.database import Timestamps, SurrogatePK, Model, reference_col, Column
+from pump_select.database import relationship
 from pump_select.example_data import list_zip
+from pump_select.extensions import db
 from pump_select.general.constants import *
+from pump_select.pumps.constants import SealType, Material
 
 
-class Polynom(object):
-    def __init__(self, x_series, y_series, n_poly_power, limits):
-        self.x_series = x_series
-        self.y_series = y_series
-        self.n_poly_power = n_poly_power
-        self.limits = self._correct_limits(limits)
+class Pump(Timestamps, SurrogatePK, Model):
+    manufacturer_id = reference_col('pump_manufacturer')
+    manufacturer = relationship('PumpManufacturer')
 
-        self.polynom = self._get_polynom()
-
-    def _get_polynom(self):
-        return P.polyfit(self.x_series, self.y_series, self.n_poly_power)
-
-    def _correct_limits(self, limits):
-        min_x, max_x = limits
-        if max_x < min_x:
-            min_x, max_x = max_x, min_x
-        return min_x, max_x
-
-    def points(self):
-        # Convert points to chart series
-        return list_zip(self.x_series, self.y_series)
-
-    def vals(self, x_vals=None):
-        if not x_vals:
-            min_x, max_x = self.limits
-            x_vals = range(int(min_x), int(max_x)+1)
-
-        y_vals = P.polyval(x_vals, self.polynom).tolist()
-        y_vals_rounded = [round(i, 2) for i in y_vals]
-
-        return [list(i) for i in zip(x_vals, y_vals_rounded)]
-
-    def max_val(self, limits):
-        # Get max efficiency
-        poly_der = P.polyder(self.polynom)  # Differentiate a polynomial.
-        roots = P.polyroots(poly_der)  # Compute the roots of a polynomial.
-        real_roots = [r.real for r in roots if not r.imag]
-
-        # Remove roots out of the limits
-        roots_in_limits = [r for r in real_roots if limits[0] < r < limits[1]]
-
-        # Get actual function values for each root (extremum)
-        roots_max = [
-            (P.polyval(r, self.polynom), r)
-            for r in roots_in_limits
-        ]
-        if not roots_max:
-            return
-
-        f_val, root = max(roots_max)
-        return f_val, root
+    name = Column(db.String(80), unique=True, nullable=False)
+    size_type = Column(db.String(80))
+    inbound_diameter = Column(db.Float(precision=2))
+    inbound_pressure = Column(db.Float(precision=2))
+    outbound_diameter = Column(db.Float(precision=2))
+    outbound_pressure = Column(db.Float(precision=2))
+    seal_type = Column(ChoiceType(choices=SealType.OPTIONS, impl=db.Integer()))
+    mass = Column(db.Integer())
+    material_body = Column(ChoiceType(choices=Material.OPTIONS, impl=db.Integer()))
+    material_wheel = Column(ChoiceType(choices=Material.OPTIONS, impl=db.Integer()))
+    material_shaft = Column(ChoiceType(choices=Material.OPTIONS, impl=db.Integer()))
+    max_pressure = Column(db.Float(precision=2))
+    frequency_regulation_needed = Column(db.Boolean())
+    fluid_temp_min = Column(db.Integer())
+    fluid_temp_max = Column(db.Integer())
 
 
-class Pump(object):
+class PumpCharacteristic(Timestamps, SurrogatePK, Model):
+    pump_id = reference_col('pump')
+    pump = relationship('Pump')
+
+    Q_H_polynom = Column(postgresql.ARRAY(db.Integer(), dimensions=1))
+    Q_EFF_polynom = Column(postgresql.ARRAY(db.Integer(), dimensions=1))
+    Q_PWR_polynom = Column(postgresql.ARRAY(db.Integer(), dimensions=1))
+    Q_NPSHr_polynom = Column(postgresql.ARRAY(db.Integer(), dimensions=1))
+    rpm = Column(db.Integer())
+    EFFmax = Column(db.Float(precision=2))
+    Qbep = Column(db.Float(precision=2))
+    Hbep = Column(db.Float(precision=2))
+    PWRbep = Column(db.Float(precision=2))   # kW, used by pump
+    PWR2bep = Column(db.Float(precision=2))  # kW, used by motor
+    NPSHrbep = Column(db.Float(precision=2))
+    _Qmin = Column(db.Float(precision=2))
+    _Qmax = Column(db.Float(precision=2))
+    Hmin = Column(db.Float(precision=2))
+    Hmax = Column(db.Float(precision=2))
+    stages = Column(db.Integer())
+    enters = Column(db.Integer())  # pump wheel with 1 or 2 entrances
+
     def __init__(self, **kwargs):
         # values populated by the form LATER, not during the INIT
         self.H = kwargs.get('H')
@@ -85,8 +80,9 @@ class Pump(object):
 
         self.EFFmax = None
         self.PWRbep = None
-        self.Hbepself = None
+        self.Hbep = None
         self.Qbep = None
+        self.NPSHrbep = None
         self._Qmin = kwargs.get('Qmin')
         self._Qmax = kwargs.get('Qmax')
 
@@ -174,6 +170,7 @@ class Pump(object):
         self.EFFmax, self.Qbep = bep
         self.Hbep = P.polyval(self.Qbep, self.polynom('H(Q)').polynom)
         self.PWRbep = P.polyval(self.Qbep, self.polynom('PWR(Q)').polynom)
+        self.NPSHrbep = P.polyval(self.Qbep, self.polynom('NPSHr(Q)').polynom)
 
         return True  # i.e. bep found succesfully
 
@@ -237,3 +234,60 @@ class Pump(object):
     @Qmax.setter
     def Qmax(self, value):
         self._Qmax = value
+
+
+class Polynom(object):
+    def __init__(self, x_series, y_series, n_poly_power, limits):
+        self.x_series = x_series
+        self.y_series = y_series
+        self.n_poly_power = n_poly_power
+        self.limits = self._correct_limits(limits)
+
+        self.polynom = self._get_polynom()
+
+    def _get_polynom(self):
+        """
+        :return: coefficients of:
+            p(x) = c_0 + c_1 * x + ... + c_n * x^n
+        """
+        return P.polyfit(self.x_series, self.y_series, self.n_poly_power)
+
+    def _correct_limits(self, limits):
+        min_x, max_x = limits
+        if max_x < min_x:
+            min_x, max_x = max_x, min_x
+        return min_x, max_x
+
+    def points(self):
+        # Convert points to chart series
+        return list_zip(self.x_series, self.y_series)
+
+    def vals(self, x_vals=None):
+        if not x_vals:
+            min_x, max_x = self.limits
+            x_vals = list(range(int(min_x), int(max_x)+1))
+
+        y_vals = P.polyval(x_vals, self.polynom).tolist()
+        y_vals_rounded = [round(i, 2) for i in y_vals]
+
+        return [list(i) for i in zip(x_vals, y_vals_rounded)]
+
+    def max_val(self, limits):
+        # Get max efficiency
+        poly_der = P.polyder(self.polynom)  # Differentiate a polynomial.
+        roots = P.polyroots(poly_der)  # Compute the roots of a polynomial.
+        real_roots = [r.real for r in roots if not r.imag]
+
+        # Remove roots out of the limits
+        roots_in_limits = [r for r in real_roots if limits[0] < r < limits[1]]
+
+        # Get actual function values for each root (extremum)
+        roots_max = [
+            (P.polyval(r, self.polynom), r)
+            for r in roots_in_limits
+        ]
+        if not roots_max:
+            return
+
+        f_val, root = max(roots_max)
+        return f_val, root

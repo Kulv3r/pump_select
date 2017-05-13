@@ -11,7 +11,7 @@
         </h1>
         <br/>
         <form class="form" method="POST" action="" role="form">
-            {{ form.csrf_token }}
+{#            {{ form.csrf_token }}#}
             {% for field in form %}
                 {{ render_field(field) }}
             {% endfor %}

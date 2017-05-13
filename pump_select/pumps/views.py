@@ -5,7 +5,7 @@ from flask_login import login_required, logout_user
 from pump_select import example_data
 from pump_select.extensions import login_manager
 from pump_select.pumps.forms import CharacteristicValuesForm
-from pump_select.pumps.models import Pump
+from pump_select.pumps.models import PumpCharacteristic
 from pump_select.users.forms import RegisterForm
 from pump_select.users.models import User
 from pump_select.utils import flash_errors
@@ -23,7 +23,7 @@ def home():
     else:
         form.populate_from_obj(example_data)
 
-    pump = Pump()
+    pump = PumpCharacteristic()
     form.populate_obj(pump)
     pump.calculate_missing()
 
@@ -33,7 +33,7 @@ def home():
     else:
         correction_values = form.Qcor.data, form.Hcor.data, form.EFFcor.data
         if all(correction_values):
-            flash(u'Corrected Pump data:', category='success')
+            flash(u'Corrected PumpCharacteristic data:', category='success')
             pump.correct(*correction_values)
             form.populate_from_obj(pump)
 

@@ -23,13 +23,14 @@ class ProdConfig(object):
 
     # Production configuration.
     ENV = 'prod'
+    WTF_CSRF_ENABLED = False
 
 
 class DevConfig(ProdConfig):
     # Development configuration.
     ENV = 'dev'
     DEBUG = True
-    DEBUG_TB_ENABLED = True
+    # DEBUG_TB_ENABLED = True
     ASSETS_DEBUG = True  # Don't bundle/minify static assets
     SQLALCHEMY_DATABASE_URI = os.environ.get('PUMP_SELECT_DATABASE_URI')
 

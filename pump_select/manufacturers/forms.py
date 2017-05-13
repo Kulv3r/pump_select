@@ -8,5 +8,5 @@ class PumpManufacturerForm(FlaskForm):
     name = StringField('Name', validators=[InputRequired()])
 
 
-class MotorManufacturerForm(PumpManufacturerForm):
-    pass
+class MotorManufacturerForm(FlaskForm):
+    name = StringField('Name', validators=[InputRequired()])
