@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="container-narrow">
+        <h1>
+            {% if motor_id %}
+                Edit motor "{{ motor.name }}"
+            {% else %}
+                Add motor
+            {% endif %}
+        </h1>
+        <br/>
+        <form class="form" method="POST" action="" role="form">
+{#            {{ form.csrf_token }}#}
+            {% for field in form %}
+                {{ render_field(field) }}
+            {% endfor %}
+            <p><input class="btn btn-default btn-submit" type="submit" value="Submit"></p>
+        </form>
+    </div>
+{% endblock %}
+

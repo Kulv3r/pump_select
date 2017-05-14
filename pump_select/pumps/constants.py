@@ -22,7 +22,7 @@ class PumpCategory(Constant):
     BB4 = 12  # Between bearings multi-stage radially split pump
     BBV = 13  # vertical multistage centrifugal in-line pumps
 
-    repr = {
+    labels = {
         OH1: 'End-suction pumps > Horizontal > Standard (OH1)',
         OH2: 'End-suction pumps > Horizontal > Centerline mounted (OH2)',
         OHM: 'End-suction pumps > Horizontal > Monoblock',
@@ -41,7 +41,7 @@ class SealType(Constant):
     MECHANICAL = 2
     DOUBLE = 3
 
-    repr = {
+    labels = {
         GLAND: 'Gland seal',
         MECHANICAL: 'Mechanical seal',
         DOUBLE: 'Double Mechanical seal',
@@ -53,7 +53,7 @@ class Material(Constant):
     CAST_IRON = 2
     BRONZE = 3
 
-    repr = {
+    labels = {
         STEEL: 'Steel',
         CAST_IRON: 'Cast Iron',
         BRONZE: 'Bronze',

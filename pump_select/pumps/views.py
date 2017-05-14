@@ -1,20 +1,69 @@
 # -*- coding: utf-8 -*-
-from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import login_required, logout_user
+from pprint import pprint
+
+import datetime
+from flask import Blueprint, flash, render_template, redirect, url_for, request
 
 from pump_select import example_data
-from pump_select.extensions import login_manager
-from pump_select.pumps.forms import CharacteristicValuesForm
-from pump_select.pumps.models import PumpCharacteristic
-from pump_select.users.forms import RegisterForm
-from pump_select.users.models import User
+from pump_select.extensions import db
+from pump_select.pumps.forms import CharacteristicValuesForm, PumpForm
+from pump_select.pumps.models import PumpCharacteristic, Pump
 from pump_select.utils import flash_errors
 
 blueprint = Blueprint('pumps', __name__, static_folder='../static')
 
 
-@blueprint.route('/', methods=['GET', 'POST'])
-def home():
+@blueprint.route('/pump/<int:pump_id>/')
+def pump(pump_id):
+    p = Pump.query.get_or_404(pump_id)
+    return render_template('pumps/pump.html', pump=p)
+
+
+@blueprint.route('/pumps/')
+def pumps():
+    all_pumps = Pump.query.order_by(Pump.manufacturer_id.asc(), Pump.name.asc())
+    return render_template('pumps/list_pumps.html', pumps=all_pumps)
+
+
+@blueprint.route('/add_pump/', methods=['GET', 'POST'])
+@blueprint.route('/edit_pump/<int:pump_id>/', methods=['GET', 'POST'])
+def edit_pump(pump_id=None):
+    if pump_id:
+        pump = Pump.query.get_or_404(pump_id)
+    else:
+        pump = Pump()
+
+    form = PumpForm(obj=pump)
+
+    if form.validate_on_submit():
+        form.populate_obj(pump)
+
+        if not pump_id:
+            db.session.add(pump)
+
+        db.session.commit()
+        flash('Saved.', category='success')
+        return redirect(url_for('pumps.pumps'))
+
+    return render_template('motors/edit.html', **locals())
+
+
+@blueprint.route('/delete_pump/<int:pump_id>/')
+def delete_pump(pump_id):
+    pump = Pump.query.get_or_404(pump_id)
+    if pump.deleted_at:
+        pump.deleted_at = None
+    else:
+        pump.deleted_at = datetime.datetime.utcnow()
+
+    db.session.commit()
+    flash('Saved.', category='success')
+    return redirect(request.referrer)
+
+
+@blueprint.route('/pump/<int:pump_id>/add_characteristic/', methods=['GET', 'POST'])
+# @blueprint.route('/pump/<int:pump_id>/edit_characteristic/<int:char_id>/', methods=['GET', 'POST'])  # tbd
+def edit_pump_characteristic(pump_id, char_id=None):
     form = CharacteristicValuesForm()
 
     if form.is_submitted():
@@ -23,52 +72,45 @@ def home():
     else:
         form.populate_from_obj(example_data)
 
-    pump = PumpCharacteristic()
-    form.populate_obj(pump)
-    pump.calculate_missing()
+    pump_char = PumpCharacteristic()
+    form.populate_obj(pump_char)
+    pump_char.calculate_missing()
 
-    bep_exists = pump.get_bep()
+    bep_exists = pump_char.get_bep()
     if not bep_exists:
         flash('Bad input data - Best Efficiency Point could not be found.', category='danger')
     else:
         correction_values = form.Qcor.data, form.Hcor.data, form.EFFcor.data
         if all(correction_values):
             flash(u'Corrected PumpCharacteristic data:', category='success')
-            pump.correct(*correction_values)
-            form.populate_from_obj(pump)
+            pump_char.correct(*correction_values)
+            form.populate_from_obj(pump_char)
+        elif any(correction_values):
+            flash('You need to specify all 3 correction values to make effect.', category='danger')
 
-    return render_template('public/home.html', **locals())
+    if form.validate() and form.save_submit.data:
+        if not char_id:
+            pump_char.pump_id = pump_id
+            db.session.add(pump_char)
+        db.session.commit()
+        flash('Pump characterictic saved succesfully.', category='success')
+        return redirect(url_for('pumps.pump', pump_id=pump_id))
+
+    return render_template(
+        'pumps/edit_charactericstic.html',
+        form=form,
+        pump_char=pump_char,
+    )
 
 
-@blueprint.route('/logout/')
-@login_required
-def logout():
-    """Logout."""
-    logout_user()
-    flash('You are logged out.', 'info')
-    return redirect(url_for('.home'))
-
-
-@blueprint.route('/register/', methods=['GET', 'POST'])
-def register():
-    """Register new user."""
-    form = RegisterForm(request.form, csrf_enabled=False)
-    if form.validate_on_submit():
-        User.create(username=form.username.data, email=form.email.data, password=form.password.data, active=True)
-        flash('Thank you for registering. You can now log in.', 'success')
-        return redirect(url_for('.home'))
+@blueprint.route('/delete_pump_characteristic/<int:char_id>/')
+def delete_pump_characteristic(char_id):
+    char = PumpCharacteristic.query.get_or_404(char_id)
+    if char.deleted_at:
+        char.deleted_at = None
     else:
-        flash_errors(form)
-    return render_template('public/register.html', form=form)
+        char.deleted_at = datetime.datetime.utcnow()
 
-
-@blueprint.route('/about/')
-def about():
-    """About page."""
-    return render_template('public/about.html')
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    """Load user by ID."""
-    return User.get_by_id(int(user_id))
+    db.session.commit()
+    flash('Saved.', category='success')
+    return redirect(request.referrer)

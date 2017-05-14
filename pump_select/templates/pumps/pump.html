@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ pump.name }} Pump</h1>
+
+<div class="row">
+    <ul>
+        {% for k, v in pump.__dict__.items() if not k.startswith('_') %}
+            <li>{{ k }}: {{ v }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<h2>Hydraulic Characteristics</h2>
+<a class="btn btn-primary" href="{{ url_for('pumps.edit_pump_characteristic', pump_id=pump.id) }}">
+    Add characteristic</a>
+<table class="table">
+    <thead>
+    <tr>
+        <td>id</td>
+        <td>RPM</td>
+        <td>Max Efficiency</td>
+        <td>Q bep</td>
+        <td>H bep</td>
+        <td>PWR bep</td>
+        <td>PWR2 bep</td>
+        <td>NPSHr bep</td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for char in pump.characteristics %}
+        <tr>
+            <td>{{ char.id }}</td>
+            <td>{{ char.rpm }}</td>
+            <td>{{ char.EFFmax }}</td>
+            <td>{{ char.Qbep }}</td>
+            <td>{{ char.Hbep }}</td>
+            <td>{{ char.PWRbep }}</td>
+            <td>{{ char.PWR2bep }}</td>
+            <td>{{ char.NPSHrbep }}</td>
+            <td>
+{#                <a href="{{ url_for('pumps.edit_pump_characteristic', pump_id=pump.id, char_id=char.id) }}" class="btn btn-primary">edit</a>#}
+                <a href="{{ url_for('pumps.delete_pump_characteristic', char_id=char.id) }}" class="btn btn-danger">
+                    {% if char.deleted_at %}restore{% else %}delete{% endif %}
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
+

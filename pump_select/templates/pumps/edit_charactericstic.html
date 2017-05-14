@@ -1,0 +1,300 @@
+{% extends "layout.html" %}
+
+{% block css %}
+    <style>
+        textarea.form-control {
+            height: 50rem;
+        }
+        .chart {
+            min-width: 320px;
+            max-width: 800px;
+            height: 220px;
+            margin: 0 auto;
+        }
+        .right-dash {
+            border-right: 1px dashed #AAA;
+        }
+        .right-no-padding {
+            padding-right: 2px;
+        }
+        .left-no-padding {
+            padding-left: 2px;
+        }
+        .charts {
+            padding-left: 30px;
+        }
+        .xhidden {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="body-content">
+        <div class="row">
+            <div class="col-lg-6 right-dash">
+                <h2><i class="fa fa-edit"></i> Input values</h2>
+                <p>Copy-Paste your data directly from an excel sheet to here.</p>
+                <div class="btn-group" style="margin-bottom: 1rem">
+                    <button id="set-eff" type="button" data-target=".EFF" class="input-values-toggler btn btn-default btn-sm active">Set Efficiency(Q)</button>
+                    <button id="set-power" type="button" data-target=".PWR" class="input-values-toggler btn btn-default btn-sm">Set Power(Q)</button>
+                </div>
+                <br>
+                <form class="form" method="POST" action="" role="form">
+                    <div class="row">
+                        <div class="col-lg-2 right-no-padding">{{ render_field(form.Q_H) }}</div>
+                        <div class="col-lg-2 left-no-padding">{{ render_field(form.H) }}</div>
+                        <div class="EFF">
+                            <div class="col-lg-2 right-no-padding">{{ render_field(form.Q_EFF) }}</div>
+                            <div class="col-lg-2 left-no-padding">{{ render_field(form.EFF) }}</div>
+                        </div>
+                        <div class="PWR xhidden">
+                            <div class="col-lg-2 right-no-padding">{{ render_field(form.Q_PWR) }}</div>
+                            <div class="col-lg-2 left-no-padding">{{ render_field(form.PWR) }}</div>
+                        </div>
+                        <div class="col-lg-2 right-no-padding">{{ render_field(form.Q_NPSHr) }}</div>
+                        <div class="col-lg-2 left-no-padding">{{ render_field(form.NPSHr) }}</div>
+                    </div>
+                    <h4>Q/H/Efficiency correction point</h4>
+                    <div class="row">
+                        <div class="col-lg-4"  >{{ render_field(form.Qcor) }}</div>
+                        <div class="col-lg-4"  >{{ render_field(form.Hcor) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.EFFcor) }}</div>
+                    </div>
+                    <h4>Polynom powers, adjust if nesessary</h4>
+                    <div class="row">
+                        <div class="col-lg-3">{{ render_field(form.H_Q_polynom_n) }}</div>
+                        <div class="col-lg-3">{{ render_field(form.EFF_Q_polynom_n) }}</div>
+                        <div class="col-lg-3">{{ render_field(form.PWR_Q_polynom_n) }}</div>
+                        <div class="col-lg-3">{{ render_field(form.NPSHr_Q_polynom_n) }}</div>
+                    </div>
+                    <h4>Engine Revolutions per minute</h4>
+                    <div class="row">
+                        <div class="col-lg-4">{{ render_field(form.rpm_preset) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.rpm_custom) }}</div>
+                    </div>
+                    <h4>Q application range</h4>
+                    <div class="row">
+                        <div class="col-lg-4">{{ render_field(form.Qmin) }}</div>
+                        <div class="col-lg-4">{{ render_field(form.Qmax) }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            {{ render_field(form.test_submit, class_='btn-default') }}
+                            {{ render_field(form.save_submit, class_='btn-primary') }}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-6 charts">
+                <div class="row">
+                    <h2><i class="fa fa-line-chart"></i> Charts</h2>
+                    <div id="container"></div>
+                </div>
+                <div class="row">
+                    <h2><i class="fa fa-table"></i> Characteristics</h2>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Qbep, m3/h</th>
+                            <th>Hbep, m</th>
+                            <th>Power bep, kW</th>
+                            <th>max Eff, %</th>
+                            <th>ns</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{{ pump_char.Qbep|round|int }}</td>
+                            <td>{{ pump_char.Hbep|round|int }}</td>
+                            <td>{{ pump_char.PWRbep|round(1) }}</td>
+                            <td>{{ pump_char.EFFmax|round(1) }}</td>
+                            <td>{{ pump_char.ns|round|int }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        function update_rpm() {
+            var $formField = $('#rpm_custom').parent();
+
+            if ($('#rpm_preset').val() == 0) {
+                    $formField.fadeIn();
+                } else {
+                    $formField.fadeOut();
+                }
+        }
+        $('#rpm_preset').on('change', update_rpm);
+
+
+        function toggle_input_values(element) {
+            var $active = $('.input-values-toggler.active'),
+                $notActive = $('.input-values-toggler:not(.active)'),
+                $targetsToShow = $($notActive.data().target),
+                $targetsToHide = $($active.data().target);
+
+            if (element == $active) return;
+
+            $notActive.addClass('active');
+            $active.removeClass('active');
+            $targetsToShow.show();
+            $targetsToHide.hide();
+
+            $('textarea', $targetsToHide).val('');
+            $('input', $targetsToHide).val('');
+        }
+
+        function update_input_values_form(is_EFF_set) {
+            if (!is_EFF_set) {
+                toggle_input_values($('.input-values-toggler.active'));
+            }
+        }
+
+        $(function () {
+            update_rpm();
+            update_input_values_form({{ pump_char.is_EFF_set }});
+
+            $('.input-values-toggler').click(toggle_input_values);
+
+
+            /**
+             * In order to synchronize tooltips and crosshairs, override the
+             * built-in events with handlers defined on the parent element.
+             */
+            $('#container').bind('mousemove touchmove touchstart', function (e) {
+                var chart,
+                        point,
+                        i,
+                        event;
+
+                for (i = 0; i < Highcharts.charts.length; i = i + 1) {
+                    chart = Highcharts.charts[i];
+                    event = chart.pointer.normalize(e.originalEvent); // Find coordinates within the chart
+                    point = chart.series[0].searchPoint(event, true); // Get the hovered point
+
+                    if (point) {
+                        point.highlight(e);
+                    }
+                }
+            });
+            /**
+             * Override the reset function, we don't need to hide the tooltips and crosshairs.
+             */
+            Highcharts.Pointer.prototype.reset = function () {
+                return undefined;
+            };
+
+            /**
+             * Highlight a point by showing tooltip, setting hover state and draw crosshair
+             */
+            Highcharts.Point.prototype.highlight = function (event) {
+                this.onMouseOver(); // Show the hover marker
+                this.series.chart.tooltip.refresh(this); // Show the tooltip
+                this.series.chart.xAxis[0].drawCrosshair(event, this); // Show the crosshair
+            };
+
+            /**
+             * Synchronize zooming through the setExtremes event handler.
+             */
+            function syncExtremes(e) {
+                var thisChart = this.chart;
+
+                if (e.trigger !== 'syncExtremes') { // Prevent feedback loop
+                    Highcharts.each(Highcharts.charts, function (chart) {
+                        if (chart !== thisChart) {
+                            if (chart.xAxis[0].setExtremes) { // It is null while updating
+                                chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, {trigger: 'syncExtremes'});
+                            }
+                        }
+                    });
+                }
+            }
+
+            var chart_data = {{ pump_char.chart_data|safe }};
+
+            $.each(chart_data, function (i, dataset) {
+                $('<div class="chart">')
+                    .appendTo('#container')
+                    .highcharts({
+                    chart: {
+                        marginLeft: 40, // Keep all charts left aligned
+                        spacingTop: 20,
+                        spacingBottom: 20
+                    },
+                    title: {
+                        text: dataset.name,
+                        align: 'left',
+                        margin: 0,
+                        x: 30
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    xAxis: {
+                        crosshair: true,
+                        events: {
+                            setExtremes: syncExtremes
+                        },
+                        labels: {
+                            format: '{value} m3/h'
+                        },
+                        // highlight the working area
+                        plotBands: [{
+                            from: {{ pump_char.Qmin }},
+                            to: {{ pump_char.Qmax }},
+                            color: 'rgba(68, 213, 170, 0.1)'
+                        }]
+                    },
+                    yAxis: {
+                        title: {
+                            text: null
+                        }
+                    },
+                    tooltip: {
+                        positioner: function () {
+                            return {
+                                x: this.chart.chartWidth - this.label.width, // right aligned
+                                y: -1 // align to title
+                            };
+                        },
+                        borderWidth: 0,
+                        backgroundColor: 'none',
+                        pointFormat: '{point.y} at {point.x}m3/h',
+                        headerFormat: '',
+                        shadow: false,
+                        style: {
+                            fontSize: '12px'
+                        },
+                        valueDecimals: dataset.valueDecimals
+                    },
+                    series: [
+                        {
+                            data: dataset.data,
+                            name: dataset.name,
+                            type: 'line',
+                            color: Highcharts.getOptions().colors[i+3],
+                            fillOpacity: 0.3,
+                            tooltip: {valueSuffix: dataset.suffix}
+                        },
+                        {
+                            data: dataset.points,
+                            type: 'line',
+                            color: 'grey',
+                            lineWidth: 0,
+                            marker: {states: {hover: {enabled: false}}}
+                        }
+                    ]
+                });
+            });
+        });
+    </script>
+{% endblock %}

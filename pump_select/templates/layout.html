@@ -1,6 +1,8 @@
 {% macro render_field(field, placeholder='', class_="form-control") %}
     {% if field.type in ('CSRFTokenField', ) or field.name == 'id' %}
         {# pass #}
+    {% elif field.type == 'SubmitField' %}
+        <input id="{{ field.name }}" name="{{ field.name }}" class="btn btn-submit {{ class_ }}" type="submit" value="{{ field.label.text }}">
     {% else %}
         <div class="form-group">
             {{ field.label }}

@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Pumps</h1>
+    <a class="btn btn-primary" href="{{ url_for('pumps.edit_pump') }}">Add</a>
+<table class="table">
+    <thead>
+    <tr>
+        <td>id</td>
+        <td>Name</td>
+        <td>Manufacturer</td>
+        <td></td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for p in pumps %}
+        <tr>
+            <td>{{ p.id }}</td>
+            <td>
+                <a href="{{ url_for('pumps.pump', pump_id=p.id) }}">{{ p.name }}</a>
+            </td>
+            <td>{{ p.manufacturer.name }}</td>
+            <td>
+                <a class="btn btn-primary" href="{{ url_for('pumps.edit_pump', pump_id=p.id) }}">edit</a>
+                <a class="btn btn-danger" href="{{ url_for('pumps.delete_pump', pump_id=p.id) }}">
+                    {% if p.deleted_at %}restore{% else %}delete{% endif %}
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
+

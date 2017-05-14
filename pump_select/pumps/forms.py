@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask_wtf import FlaskForm
-from wtforms import SelectField, FloatField, StringField, BooleanField
+from wtforms import SelectField, FloatField, StringField, BooleanField, SubmitField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.fields.html5 import IntegerField
 from wtforms.validators import Optional, InputRequired
@@ -26,18 +26,15 @@ class PumpForm(FlaskForm):
     )
     name = StringField('Series title', validators=[InputRequired()])
     size_type = StringField('Dimension-type', validators=[InputRequired()])
-    inbound_diameter = FloatField()
-    inbound_pressure = FloatField()
-    outbound_diameter = FloatField()
-    outbound_pressure = FloatField()
-    seal_type = SelectField(
-        choices=SealType.OPTIONS,
-        coerce=int,
-    )
+    inbound_diameter = FloatField('Inbound Diameter, mm')
+    inbound_pressure = FloatField('Inbound Pressure, MPa')
+    outbound_diameter = FloatField('Outbound Diameter, mm')
+    outbound_pressure = FloatField('Outbound Pressure, MPa')
+    seal_type = SelectField(choices=SealType.OPTIONS, coerce=int)
     mass = IntegerField('Weight, kg')
-    material_body = SelectField(choices=Material.OPTIONS)
-    material_wheel = SelectField(choices=Material.OPTIONS)
-    material_shaft = SelectField(choices=Material.OPTIONS)
+    material_body = SelectField(choices=Material.OPTIONS, coerce=int)
+    material_wheel = SelectField(choices=Material.OPTIONS, coerce=int)
+    material_shaft = SelectField(choices=Material.OPTIONS, coerce=int)
     max_pressure = FloatField('Max Pressure, bar (MPa)')
     frequency_regulation_needed = BooleanField()
     fluid_temp_min = IntegerField('Fluid Min Temperature, °С')
@@ -100,6 +97,9 @@ class CharacteristicValuesForm(FlaskForm):
     # Q application range
     Qmin = IntegerField(u'Q min, m3', validators=[Optional()])
     Qmax = IntegerField(u'Q max, m3', validators=[Optional()])
+
+    test_submit = SubmitField('Test')
+    save_submit = SubmitField('Save')
 
     def populate_obj(self, obj):
         super(CharacteristicValuesForm, self).populate_obj(obj)

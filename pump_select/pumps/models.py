@@ -33,6 +33,14 @@ class Pump(Timestamps, SurrogatePK, Model):
     fluid_temp_min = Column(db.Integer())
     fluid_temp_max = Column(db.Integer())
 
+    @property
+    def characteristics(self):
+        return (
+            PumpCharacteristic.query
+            .filter(PumpCharacteristic.pump == self)
+            .order_by(PumpCharacteristic.Qbep.asc())
+        )
+
 
 class PumpCharacteristic(Timestamps, SurrogatePK, Model):
     pump_id = reference_col('pump')
@@ -173,10 +181,6 @@ class PumpCharacteristic(Timestamps, SurrogatePK, Model):
         self.NPSHrbep = P.polyval(self.Qbep, self.polynom('NPSHr(Q)').polynom)
 
         return True  # i.e. bep found succesfully
-
-    @property
-    def rpm(self):
-        return self.rpm_preset or self.rpm_custom
 
     @property
     def ns(self):
