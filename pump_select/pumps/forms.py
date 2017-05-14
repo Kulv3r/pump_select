@@ -35,7 +35,7 @@ class PumpForm(FlaskForm):
     material_body = SelectField(choices=Material.OPTIONS, coerce=int)
     material_wheel = SelectField(choices=Material.OPTIONS, coerce=int)
     material_shaft = SelectField(choices=Material.OPTIONS, coerce=int)
-    max_pressure = FloatField('Max Pressure, bar (MPa)')
+    max_pressure = FloatField('Max Pressure, MPa')
     frequency_regulation_needed = BooleanField()
     fluid_temp_min = IntegerField('Fluid Min Temperature, °С')
     fluid_temp_max = IntegerField('Fluid Max Temperature, °С')
@@ -110,6 +110,3 @@ class CharacteristicValuesForm(FlaskForm):
         for attr in ('H', 'Q_H', 'EFF', 'Q_EFF', 'NPSHr', 'Q_NPSHr'):
             field = getattr(self, attr)
             field.data = [round(i, 2) for i in getattr(obj, attr)]
-
-        # self._Qmin.data = obj.Qmin
-        # self._Qmax.data = obj.Qmax

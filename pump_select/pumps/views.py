@@ -79,28 +79,46 @@ def edit_pump_characteristic(pump_id, char_id=None):
     bep_exists = pump_char.get_bep()
     if not bep_exists:
         flash('Bad input data - Best Efficiency Point could not be found.', category='danger')
+
     else:
         correction_values = form.Qcor.data, form.Hcor.data, form.EFFcor.data
+        correction_needed = _correction_needed(correction_values, pump_char)
+
         if all(correction_values):
-            flash(u'Corrected PumpCharacteristic data:', category='success')
-            pump_char.correct(*correction_values)
-            form.populate_from_obj(pump_char)
+            if correction_needed:
+                flash(u'Corrected PumpCharacteristic data:', category='success')
+                pump_char.correct(*correction_values)
+                form.populate_from_obj(pump_char)
+
         elif any(correction_values):
             flash('You need to specify all 3 correction values to make effect.', category='danger')
 
-    if form.validate() and form.save_submit.data:
-        if not char_id:
-            pump_char.pump_id = pump_id
-            db.session.add(pump_char)
-        db.session.commit()
-        flash('Pump characterictic saved succesfully.', category='success')
-        return redirect(url_for('pumps.pump', pump_id=pump_id))
+        # Save only if no correction values were specified,
+        # i.e. data was manually tested previously. after last correction.
+        if form.validate() and form.save_submit.data and not correction_needed:
+            if not char_id:
+                pump_char.pump_id = pump_id
+                db.session.add(pump_char)
+            db.session.commit()
+            flash('Pump characterictic saved succesfully.', category='success')
+            return redirect(url_for('pumps.pump', pump_id=pump_id))
+
+    print(form.Qcor.data)
 
     return render_template(
         'pumps/edit_charactericstic.html',
         form=form,
         pump_char=pump_char,
     )
+
+
+def _correction_needed(correction_values, pump_char):
+    # correction_values = form.Qcor.data, form.Hcor.data, form.EFFcor.data
+    return max(
+            (correction_values[0] - pump_char.Qbep) / pump_char.Qbep,
+            (correction_values[1] - pump_char.Hbep) / pump_char.Hbep,
+            (correction_values[2] - pump_char.EFFcor) / pump_char.EFFcor,
+    ) > 0.01
 
 
 @blueprint.route('/delete_pump_characteristic/<int:char_id>/')
