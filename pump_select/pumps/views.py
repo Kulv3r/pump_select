@@ -84,8 +84,7 @@ def edit_pump_characteristic(pump_id, char_id=None):
         correction_values = form.Qcor.data, form.Hcor.data, form.EFFcor.data
         correction_needed = _correction_needed(correction_values, pump_char)
 
-        if all(correction_values):
-            if correction_needed:
+        if correction_needed:
                 flash(u'Corrected PumpCharacteristic data:', category='success')
                 pump_char.correct(*correction_values)
                 form.populate_from_obj(pump_char)
@@ -103,8 +102,6 @@ def edit_pump_characteristic(pump_id, char_id=None):
             flash('Pump characterictic saved succesfully.', category='success')
             return redirect(url_for('pumps.pump', pump_id=pump_id))
 
-    print(form.Qcor.data)
-
     return render_template(
         'pumps/edit_charactericstic.html',
         form=form,
@@ -114,7 +111,7 @@ def edit_pump_characteristic(pump_id, char_id=None):
 
 def _correction_needed(correction_values, pump_char):
     # correction_values = form.Qcor.data, form.Hcor.data, form.EFFcor.data
-    return max(
+    return all(correction_values) and max(
             (correction_values[0] - pump_char.Qbep) / pump_char.Qbep,
             (correction_values[1] - pump_char.Hbep) / pump_char.Hbep,
             (correction_values[2] - pump_char.EFFcor) / pump_char.EFFcor,
