@@ -84,7 +84,8 @@ def edit_pump_characteristic(pump_id, char_id=None):
         correction_values = form.Qcor.data, form.Hcor.data, form.EFFcor.data
         correction_needed = _correction_needed(correction_values, pump_char)
 
-        if correction_needed:
+        if all(correction_values):
+            if correction_needed:
                 flash(u'Corrected PumpCharacteristic data:', category='success')
                 pump_char.correct(*correction_values)
                 form.populate_from_obj(pump_char)
