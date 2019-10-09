@@ -4,6 +4,9 @@ PumpCharacteristic Select
 
 An app to help you select a better pump for your demands.
 
+Main page to add a pump characteristic based on measured points (please dont spam-save trash stuff there):
+https://pump-select.herokuapp.com/pump/1/add_characteristic/
+
 
 Quickstart
 ----------
